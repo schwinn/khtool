@@ -17,7 +17,7 @@ python3 ./khtool.py -i [interface name]
 Query speakers
 
 ```shell
-python3 ./khtool.py -i en0     
+python3 ./khtool.py -i en0 -q
 *** Device: Right ***
 IPv6 address: fe80::2a36:38ff:fexx:xxxx
 {"device":{"identity":{"vendor":"Georg Neumann GmbH"}}}
@@ -88,21 +88,26 @@ python3 ./khtool.py -i en0 --save
 Print help
 ```shell
 python3 ./khtool.py -h           
-usage: khtool.py [-h] [--scan] [--save] [--brightness BRIGHTNESS] -i INTERFACE
+usage: khtool.py [-h] [--scan] [-q] [--save] [--brightness BRIGHTNESS]
+                 [--delay DELAY] -i INTERFACE [-t {all,0,1,2,3,4,5,6,7,8}]
 
 options:
   -h, --help            show this help message and exit
-  --scan                scan for devices and ignore the setup.json file
+  --scan                scan for devices and ignore the khtool.json file
+  -q, --query           query loudspeaker(s)
   --save                performs a save_settings command to the devices
   --brightness BRIGHTNESS
                         set logo brightness [0-100]
+  --delay DELAY         set delay in 1/48khz samples [0-3360]
   -i INTERFACE, --interface INTERFACE
                         network interface to use (e.g. en0)
+  -t {all,0,1,2,3,4,5,6,7,8}, --target {all,0,1,2,3,4,5,6,7,8}
+                        use all speakers or only the selected one
 ``` 
 
 
 ## Note
 
-The tool was only tested with a pair of Neumann KH 80 DSP speakers under macOS Monterey. Python 3 was downloaded from [python.org](https://www.python.org/downloads/). 
+The tool was only tested with a pair of Neumann KH 80 DSP speakers under macOS Monterey. Python3 must be installed on macOS to use the tool. Communication with the speakers is exclusively via IPv6. Therefore, it must be activated in the operating system.
 
 Use at your own risk. 
