@@ -75,6 +75,22 @@ python3 ./khtool.py -i en0 --brightness 50
 {"ui":{"logo":{"brightness":50}}}
 ```
 
+Mute speakers
+```shell
+python3 ./khtool.py -i en0 --mute
+Used Device:  Right
+IPv6 address: fe80::2a36:38ff:fexx:xxxx
+{"audio":{"out":{"mute":true}}}
+```
+
+Unmute speakers
+```shell
+python3 ./khtool.py -i en0 --unmute
+Used Device:  Right
+IPv6 address: fe80::2a36:38ff:fexx:xxxx
+{"audio":{"out":{"mute":false}}}
+```
+
 Save settings
 ```shell
 python3 ./khtool.py -i en0 --save         
@@ -88,8 +104,7 @@ python3 ./khtool.py -i en0 --save
 Print help
 ```shell
 python3 ./khtool.py -h           
-usage: khtool.py [-h] [--scan] [-q] [--save] [--brightness BRIGHTNESS]
-                 [--delay DELAY] -i INTERFACE [-t {all,0,1,2,3,4,5,6,7,8}]
+usage: khtool.py [-h] [--scan] [-q] [--save] [--brightness BRIGHTNESS] [--delay DELAY] [--mute] [--unmute] -i INTERFACE [-t {all,0,1,2,3,4,5,6,7,8}]
 
 options:
   -h, --help            show this help message and exit
@@ -99,6 +114,8 @@ options:
   --brightness BRIGHTNESS
                         set logo brightness [0-100]
   --delay DELAY         set delay in 1/48khz samples [0-3360]
+  --mute                mute speaker(s)
+  --unmute              unmute speaker(s)
   -i INTERFACE, --interface INTERFACE
                         network interface to use (e.g. en0)
   -t {all,0,1,2,3,4,5,6,7,8}, --target {all,0,1,2,3,4,5,6,7,8}
