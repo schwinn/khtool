@@ -5,7 +5,7 @@ import argparse
 
 
 def ssccommand(device, str):
-    ssc_transaction = device.send_ssc(str)
+    ssc_transaction = device.send_ssc(str, buffersize=256)
     print(ssc_transaction['RX'].replace("\r\n", ""))
 
 
@@ -101,7 +101,8 @@ def main():
         found_setup = ssc.scan()
         if found_setup is not None:
             found_setup.to_json('khtool.json')
-            print("Found "+str(len(found_setup.ssc_devices))+" Device(s) and stored configuration to khtool.json.")
+            print("Found "+str(len(found_setup.ssc_devices)) +
+                  " Device(s) and stored configuration to khtool.json.")
             exit(0)
         else:
             raise Exception("No SSC device setup found.")

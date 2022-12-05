@@ -1,5 +1,5 @@
 # khtool
-This is a simple tool for querying or changing the settings of Neumann KH loudspeakers via the Sennheiser Sound Control Protocol. 
+This is a simple tool for querying or changing the settings of Neumann KH DSP loudspeakers via the Sennheiser Sound Control Protocol. 
 
 ## Libraries Required
 
