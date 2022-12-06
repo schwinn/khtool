@@ -1,65 +1,76 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import pyssc as ssc
 import os
 import json
 import argparse
 
 
-def ssccommand(device, str):
+__author__ = "Thorsten Schwinn"
+__version__ = '0.1'
+__license__ = "MIT"
+
+
+def send_command(device, str):
     ssc_transaction = device.send_ssc(str, buffersize=256)
-    print(ssc_transaction['RX'].replace("\r\n", ""))
+    print(ssc_transaction.RX.replace("\r\n", ""))
 
 
-def query(device):
+def query_device(device):
     print("*** query device settings ***")
-    ssccommand(device, '{"device":{"name":null}}')
-    ssccommand(device, '{"device":{"identity":{"vendor":null}}}')
-    ssccommand(device, '{"device":{"identity":{"product":null}}}')
-    ssccommand(device, '{"device":{"identity":{"serial":null}}}')
-    ssccommand(device, '{"device":{"identity":{"version":null}}}')
-    ssccommand(device, '{"ui":{"logo":{"brightness":null}}}')
-    ssccommand(device, '{"audio":{"in":{"gain":null}}}')
-    ssccommand(device, '{"audio":{"in":{"phase_invert":null}}}')
-    ssccommand(device, '{"audio":{"out":{"level":null}}}')
-    ssccommand(device, '{"audio":{"out":{"dimm":null}}}')
-    ssccommand(device, '{"audio":{"out":{"delay":null}}}')
-    ssccommand(device, '{"audio":{"out":{"mute":null}}}')
-    ssccommand(device, '{"audio":{"out":{"solo":null}}}')
-    ssccommand(device, '{"audio":{"out":{"phase_correction":null}}}')
-    ssccommand(device, '{"audio":{"out":{"limiter_mode":null}}}')
-    ssccommand(device, '{"audio":{"out":{"equalizer":{"enabled":null}}}}')
-    ssccommand(device, '{"audio":{"out":{"equalizer":{"type":null}}}}')
-    ssccommand(device, '{"audio":{"out":{"equalizer":{"frequency":null}}}}')
-    ssccommand(device, '{"audio":{"out":{"equalizer":{"q":null}}}}')
-    ssccommand(device, '{"audio":{"out":{"equalizer":{"gain":null}}}}')
-    ssccommand(device, '{"audio":{"out":{"equalizer":{"boost":null}}}}')
+    send_command(device, '{"device":{"name":null}}')
+    send_command(device, '{"device":{"identity":{"vendor":null}}}')
+    send_command(device, '{"device":{"identity":{"product":null}}}')
+    send_command(device, '{"device":{"identity":{"serial":null}}}')
+    send_command(device, '{"device":{"identity":{"version":null}}}')
+    send_command(device, '{"ui":{"logo":{"brightness":null}}}')
+    send_command(device, '{"audio":{"in":{"gain":null}}}')
+    send_command(device, '{"audio":{"in":{"phase_invert":null}}}')
+    send_command(device, '{"audio":{"out":{"level":null}}}')
+    send_command(device, '{"audio":{"out":{"dimm":null}}}')
+    send_command(device, '{"audio":{"out":{"delay":null}}}')
+    send_command(device, '{"audio":{"out":{"mute":null}}}')
+    send_command(device, '{"audio":{"out":{"solo":null}}}')
+    send_command(device, '{"audio":{"out":{"phase_correction":null}}}')
+    send_command(device, '{"audio":{"out":{"limiter_mode":null}}}')
+    send_command(device, '{"audio":{"out":{"equalizer":{"enabled":null}}}}')
+    send_command(device, '{"audio":{"out":{"equalizer":{"type":null}}}}')
+    send_command(device, '{"audio":{"out":{"equalizer":{"frequency":null}}}}')
+    send_command(device, '{"audio":{"out":{"equalizer":{"q":null}}}}')
+    send_command(device, '{"audio":{"out":{"equalizer":{"gain":null}}}}')
+    send_command(device, '{"audio":{"out":{"equalizer":{"boost":null}}}}')
 
 
-def printheader(device):
+def print_header(device):
     ssc_transaction = device.send_ssc('{"device":{"name":null}}')
-    y = json.loads(ssc_transaction['RX'])
+    y = json.loads(ssc_transaction.RX)
     print("Used Device:  " + str(y['device']['name']))
     print("IPv6 address: " + device.ip)
 
 
-def handledevice(args, device):
+def handle_device(args, device):
     if args.brightness != None:
-        ssccommand(
+        send_command(
             device, '{"ui":{"logo":{"brightness":'+str(args.brightness)+'}}}')
 
     if args.delay != None:
-        ssccommand(device, '{"audio":{"out":{"delay":'+str(args.delay)+'}}}')
+        send_command(device, '{"audio":{"out":{"delay":'+str(args.delay)+'}}}')
+
+    if args.dimm != None:
+        send_command(device, '{"audio":{"out":{"dimm":'+f'{args.dimm:.1f}'+'}}}')
 
     if args.mute:
-        ssccommand(device, '{"audio":{"out":{"mute":true}}}')
+        send_command(device, '{"audio":{"out":{"mute":true}}}')
 
     if args.unmute:
-        ssccommand(device, '{"audio":{"out":{"mute":false}}}')
+        send_command(device, '{"audio":{"out":{"mute":false}}}')
 
     if args.save:
-        ssccommand(device, '{"device":{"save_settings":true}}')
+        send_command(device, '{"device":{"save_settings":true}}')
 
     if args.query:
-        query(device)
+        query_device(device)
 
 
 def main():
@@ -74,6 +85,8 @@ def main():
                         type=int, help="set logo brightness [0-100]")
     parser.add_argument('--delay', action="store", type=int,
                         help="set delay in 1/48khz samples [0-3360]")
+    parser.add_argument('--dimm', action="store", type=float,
+                        help="set dimm in dB [-120-0]")
     parser.add_argument('--mute', action="store_true", help="mute speaker(s)")
     parser.add_argument('--unmute', action="store_true",
                         help="unmute speaker(s)")
@@ -92,6 +105,11 @@ def main():
     if args.delay:
         if args.delay < 0 or args.delay > 3360:
             print("Error: delay out of range [0-3360]")
+            exit(1)
+
+    if args.dimm:
+        if args.dimm < -120 or args.dimm > 0:
+            print("Error: dimm out of range [-120-0]")
             exit(1)
 
     if os.path.exists('khtool.json') and not args.scan:
@@ -117,15 +135,15 @@ def main():
         device = found_setup.ssc_devices[int(args.target)]
         device.connect(interface='%'+args.interface)
 
-        printheader(device)
-        handledevice(args, device)
+        print_header(device)
+        handle_device(args, device)
         print("")
 
     else:
         found_setup.connect_all(interface='%'+args.interface)
         for ssc_device in found_setup.ssc_devices:
-            printheader(ssc_device)
-            handledevice(args, ssc_device)
+            print_header(ssc_device)
+            handle_device(args, ssc_device)
             print("")
 
 
