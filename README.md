@@ -66,7 +66,7 @@ IPv6 address: fe80::2a36:38ff:fexx:xxxx
 ```
 
 Set logo brightness
-```shell
+```
 python3 ./khtool.py -i en0 --brightness 50
 *** Device: Right ***
 {"ui":{"logo":{"brightness":50}}}
@@ -76,7 +76,7 @@ python3 ./khtool.py -i en0 --brightness 50
 ```
 
 Mute speakers
-```shell
+```
 python3 ./khtool.py -i en0 --mute
 Used Device:  Right
 IPv6 address: fe80::2a36:38ff:fexx:xxxx
@@ -84,7 +84,7 @@ IPv6 address: fe80::2a36:38ff:fexx:xxxx
 ```
 
 Unmute speakers
-```shell
+```
 python3 ./khtool.py -i en0 --unmute
 Used Device:  Right
 IPv6 address: fe80::2a36:38ff:fexx:xxxx
@@ -92,7 +92,7 @@ IPv6 address: fe80::2a36:38ff:fexx:xxxx
 ```
 
 Save settings
-```shell
+```
 python3 ./khtool.py -i en0 --save         
 *** Device: Right ***
 {"device":{"save_settings":true}}
@@ -102,9 +102,8 @@ python3 ./khtool.py -i en0 --save
 ```
 
 Print help
-```shell
-python3 ./khtool.py -h           
-usage: khtool.py [-h] [--scan] [-q] [--save] [--brightness BRIGHTNESS] [--delay DELAY] [--mute] [--unmute] -i INTERFACE [-t {all,0,1,2,3,4,5,6,7,8}]
+```
+usage: khtool.py [-h] [--scan] [-q] [--save] [--brightness BRIGHTNESS] [--delay DELAY] [--dimm DIMM] [--mute] [--unmute] -i INTERFACE [-t {all,0,1,2,3,4,5,6,7,8}]
 
 options:
   -h, --help            show this help message and exit
@@ -114,6 +113,7 @@ options:
   --brightness BRIGHTNESS
                         set logo brightness [0-100]
   --delay DELAY         set delay in 1/48khz samples [0-3360]
+  --dimm DIMM           set dimm in dB [-120-0]
   --mute                mute speaker(s)
   --unmute              unmute speaker(s)
   -i INTERFACE, --interface INTERFACE
