@@ -8,7 +8,7 @@ This is a simple tool for querying or changing the settings of Neumann KH DSP lo
 ## Usage
 
 You must specify the name of the network interface to which the speakers are connected.
-```shell
+```
 python3 ./khtool.py -i [interface name]
 ```
 
@@ -16,8 +16,8 @@ python3 ./khtool.py -i [interface name]
 
 Query speakers
 
-```shell
-python3 ./khtool.py -i en0 -q
+```
+python3 ./khtool.py -i en1 -q
 *** Device: Right ***
 IPv6 address: fe80::2a36:38ff:fexx:xxxx
 {"device":{"identity":{"vendor":"Georg Neumann GmbH"}}}
@@ -67,7 +67,7 @@ IPv6 address: fe80::2a36:38ff:fexx:xxxx
 
 Set logo brightness
 ```
-python3 ./khtool.py -i en0 --brightness 50
+python3 ./khtool.py -i en1 --brightness 50
 *** Device: Right ***
 {"ui":{"logo":{"brightness":50}}}
 
@@ -77,7 +77,7 @@ python3 ./khtool.py -i en0 --brightness 50
 
 Mute speakers
 ```
-python3 ./khtool.py -i en0 --mute
+python3 ./khtool.py -i en1 --mute
 Used Device:  Right
 IPv6 address: fe80::2a36:38ff:fexx:xxxx
 {"audio":{"out":{"mute":true}}}
@@ -85,15 +85,15 @@ IPv6 address: fe80::2a36:38ff:fexx:xxxx
 
 Unmute speakers
 ```
-python3 ./khtool.py -i en0 --unmute
+python3 ./khtool.py -i en1 --unmute
 Used Device:  Right
 IPv6 address: fe80::2a36:38ff:fexx:xxxx
 {"audio":{"out":{"mute":false}}}
 ```
 
-Save settings
+Save settings (not supported on KH 750 DSP)
 ```
-python3 ./khtool.py -i en0 --save         
+python3 ./khtool.py -i en1 --save         
 *** Device: Right ***
 {"device":{"save_settings":true}}
 
@@ -101,30 +101,53 @@ python3 ./khtool.py -i en0 --save
 {"device":{"save_settings":true}}
 ```
 
+Using the expert option - e.g. query of the input level
+``` 
+python3 ./khtool.py -i en1 -t 1 --expert '{"m":{"audio":null}}'
+Used Device:  Right
+IPv6 address: fe80::2a36:38ff:fexx:xxxx
+{"m":{"audio":-94.1}}
+```
+
+Backup settings to JSON file (The restore will be implemented in a future version. I use it currently to compare the settings with diff after a MA 1 setup.) 
+```
+./khtool.py -i en1 -b backup-230101.json --comment "MA1 Adjustment with Lowshelf 75hz, -0.7db, q1.0"
+```
+
 Print help
 ```
-usage: khtool.py [-h] [--scan] [-q] [--save] [--brightness BRIGHTNESS] [--delay DELAY] [--dimm DIMM] [--mute] [--unmute] -i INTERFACE [-t {all,0,1,2,3,4,5,6,7,8}]
+python3 ./khtool.py -h
+usage: khtool.py [-h] [--scan] [-q] [-b BACKUP] [--comment COMMENT] [--save]
+                 [--brightness BRIGHTNESS] [--delay DELAY] [--dimm DIMM]
+                 [--level LEVEL] [--mute] [--unmute] -i INTERFACE
+                 [-t {all,0,1,2,3,4,5,6,7,8}] [-v]
 
 options:
   -h, --help            show this help message and exit
   --scan                scan for devices and ignore the khtool.json file
   -q, --query           query loudspeaker(s)
-  --save                performs a save_settings command to the devices
+  -b BACKUP, --backup BACKUP
+                        generate json backup of loudspeaker(s) and save it to
+                        [filename]
+  --comment COMMENT     comment for backup file
+  --save                performs a save_settings command to the devices (only
+                        for KH 80/KH 150)
   --brightness BRIGHTNESS
-                        set logo brightness [0-100]
+                        set logo brightness [0-100] (only for KH 80/KH 150)
   --delay DELAY         set delay in 1/48khz samples [0-3360]
   --dimm DIMM           set dimm in dB [-120-0]
+  --level LEVEL         set level in dB [0-120]
   --mute                mute speaker(s)
   --unmute              unmute speaker(s)
   -i INTERFACE, --interface INTERFACE
                         network interface to use (e.g. en0)
   -t {all,0,1,2,3,4,5,6,7,8}, --target {all,0,1,2,3,4,5,6,7,8}
                         use all speakers or only the selected one
-``` 
-
+  -v, --version         show program's version number and exit
+```
 
 ## Note
 
-The tool was only tested with a pair of Neumann KH 80 DSP speakers under macOS Monterey. Python3 must be installed on macOS to use the tool. Communication with the speakers is exclusively via IPv6. Therefore, it must be activated in the operating system.
+The tool was only tested with a pair of Neumann KH 80 DSP speakers and a KH 750 DSP subwoofer under macOS Monterey. Python3 must be installed on macOS to use the tool. Communication with the speakers is exclusively via IPv6. Therefore, it must be activated in the operating system.
 
 Use at your own risk. 
