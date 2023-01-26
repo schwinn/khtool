@@ -101,7 +101,7 @@ python3 ./khtool.py -i en1 --save
 {"device":{"save_settings":true}}
 ```
 
-Using the expert option - e.g. query of the input level
+Using the expert option - e.g. query the input level
 ``` 
 python3 ./khtool.py -i en1 -t 1 --expert '{"m":{"audio":null}}'
 Used Device:  Right
