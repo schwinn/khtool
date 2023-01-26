@@ -130,5 +130,7 @@ dmypy.json
 .vscode
 *.json
 
-# Scripts
+# everything else
 *.sh
+*.txt
+*.pcap

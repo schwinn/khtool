@@ -6,15 +6,20 @@ import os
 import json
 import argparse
 import time
+import signal
 
 
 __author__ = "Thorsten Schwinn"
-__version__ = '0.11'
+__version__ = '0.13'
 __license__ = "MIT"
 
 
+signal.signal(signal.SIGINT, lambda x, y: exit(1))
+interface = ''
+
+
 def send_command(device, str):
-    ssc_transaction = device.send_ssc(str, buffersize=256)
+    ssc_transaction = device.send_ssc(str, interface=interface)
     if hasattr(ssc_transaction, 'RX'):
         return ssc_transaction.RX.replace("\r\n", "")
 
@@ -26,12 +31,25 @@ def send_print(device, str):
 
 
 def send_add_array(device, str, x):
-    ssc_transaction = device.send_ssc(str)
+    ssc_transaction = device.send_ssc(str, interface=interface)
 
     if hasattr(ssc_transaction, 'RX'):
         x.append(ssc_transaction.RX.replace("\r\n", ""))
 
     return x
+
+
+def restore_device(device, db):
+    if get_product(device) != db['product']:
+        print("Product name does not match.")
+        exit(1)
+
+    if get_serial(device) != db['serial']:
+        print("Serial number does not match.")
+        exit(1)
+
+    for i in db['commands']:
+        send_print(device, i)
 
 
 def backup_device(device, db):
@@ -70,8 +88,6 @@ def backup_device(device, db):
         commands = send_add_array(
             device, '{"audio":{"out":{"phase_correction":null}}}', commands)
         commands = send_add_array(
-            device, '{"audio":{"out":{"limiter_mode":null}}}', commands)
-        commands = send_add_array(
             device, '{"audio":{"out":{"equalizer":{"enabled":null}}}}', commands)
         commands = send_add_array(
             device, '{"audio":{"out":{"equalizer":{"type":null}}}}', commands)
@@ -91,10 +107,6 @@ def backup_device(device, db):
             device, '{"audio":{"in":{"delay":null}}}', commands)
         commands = send_add_array(
             device, '{"audio":{"in":{"interface":null}}}', commands)
-        commands = send_add_array(
-            device, '{"audio":{"in1":{"label":null}}}', commands)
-        commands = send_add_array(
-            device, '{"audio":{"in2":{"label":null}}}', commands)
 
         for x in range(1, 6):
             if x != 5:
@@ -106,14 +118,9 @@ def backup_device(device, db):
                 device, '{"audio":{"out'+str(x)+'":{"gain":null}}}', commands)
             commands = send_add_array(
                 device, '{"audio":{"out'+str(x)+'":{"delay":null}}}', commands)
-            commands = send_add_array(
-                device, '{"audio":{"out'+str(x)+'":{"control":null}}}', commands)
 
             commands = send_add_array(
                 device, '{"audio":{"out'+str(x)+'":{"mixer":{"levels":null}}}}', commands)
-
-            commands = send_add_array(
-                device, '{"audio":{"out'+str(x)+'":{"eq1":{"desc":null}}}}', commands)
 
             for z in range(1, 3):
                 commands = send_add_array(
@@ -268,7 +275,7 @@ def query_device(device):
 
 
 def print_header(device):
-    ssc_transaction = device.send_ssc('{"device":{"name":null}}')
+    ssc_transaction = device.send_ssc('{"device":{"name":null}}', interface=interface)
 
     if hasattr(ssc_transaction, 'RX'):
         y = json.loads(ssc_transaction.RX)
@@ -277,8 +284,7 @@ def print_header(device):
 
 
 def get_product(device):
-    ssc_transaction = device.send_ssc(
-        '{"device":{"identity":{"product":null}}}')
+    ssc_transaction = device.send_ssc('{"device":{"identity":{"product":null}}}', interface=interface)
 
     if hasattr(ssc_transaction, 'RX'):
         y = json.loads(ssc_transaction.RX)
@@ -288,8 +294,7 @@ def get_product(device):
 
 
 def get_serial(device):
-    ssc_transaction = device.send_ssc(
-        '{"device":{"identity":{"serial":null}}}')
+    ssc_transaction = device.send_ssc('{"device":{"identity":{"serial":null}}}', interface=interface)
 
     if hasattr(ssc_transaction, 'RX'):
         y = json.loads(ssc_transaction.RX)
@@ -299,8 +304,7 @@ def get_serial(device):
 
 
 def get_version(device):
-    ssc_transaction = device.send_ssc(
-        '{"device":{"identity":{"version":null}}}')
+    ssc_transaction = device.send_ssc('{"device":{"identity":{"version":null}}}', interface=interface)
 
     if hasattr(ssc_transaction, 'RX'):
         y = json.loads(ssc_transaction.RX)
@@ -310,8 +314,7 @@ def get_version(device):
 
 
 def get_vendor(device):
-    ssc_transaction = device.send_ssc(
-        '{"device":{"identity":{"vendor":null}}}')
+    ssc_transaction = device.send_ssc('{"device":{"identity":{"vendor":null}}}', interface=interface)
 
     if hasattr(ssc_transaction, 'RX'):
         y = json.loads(ssc_transaction.RX)
@@ -352,11 +355,11 @@ def handle_device(args, device):
     if args.unmute:
         send_print(device, '{"audio":{"out":{"mute":false}}}')
 
-    if args.save:
-        send_print(device, '{"device":{"save_settings":true}}')
-
     if args.expert:
         send_print(device, args.expert)
+
+    if args.save:
+        send_print(device, '{"device":{"save_settings":true}}')
 
 
 def main():
@@ -365,8 +368,10 @@ def main():
                         help="scan for devices and ignore the khtool.json file")
     parser.add_argument('-q', '--query', action="store_true",
                         help="query loudspeaker(s)")
-    parser.add_argument('-b', '--backup', action="store",
+    parser.add_argument('--backup', action="store",
                         help="generate json backup of loudspeaker(s) and save it to [filename]")
+    parser.add_argument('--restore', action="store",
+                        help="restore configuration from [filename]")
     parser.add_argument('--comment', action="store",
                         help="comment for backup file")
     parser.add_argument('--save', action="store_true",
@@ -382,13 +387,16 @@ def main():
     parser.add_argument('--mute', action="store_true", help="mute speaker(s)")
     parser.add_argument('--unmute', action="store_true",
                         help="unmute speaker(s)")
-    parser.add_argument('--expert', action="store",  help=argparse.SUPPRESS)
+    parser.add_argument('--expert', action="store",  help="send a custom command")
     parser.add_argument('-i', '--interface', action="store",
                         required=True, help='network interface to use (e.g. en0)')
     parser.add_argument('-t', '--target', action='store', default='all', choices=[
                         'all', '0', '1', '2', '3', '4', '5', '6', '7', '8'], help='use all speakers or only the selected one')
-    parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
+    parser.add_argument('-v', '--version', action='version',
+                        version='%(prog)s ' + __version__)
     args = parser.parse_args()
+
+    interface = '%'+args.interface
 
     if args.brightness:
         if args.brightness < 0 or args.brightness > 100:
@@ -433,12 +441,12 @@ def main():
                 exit(1)
 
             device = found_setup.ssc_devices[int(args.target)]
-            device.connect(interface='%'+args.interface)
+            device.connect(interface=interface)
             devicedb = backup_device(device, devicedb)
         else:
-            for ssc_device in found_setup.ssc_devices:
-                ret = ssc_device.connect(interface='%'+args.interface)
-                devicedb = backup_device(ssc_device, devicedb)
+            for device in found_setup.ssc_devices:
+                device.connect(interface=interface)
+                devicedb = backup_device(device, devicedb)
 
         backup = {"devices": devicedb}
         backup["timestamp"] = int(time.time())
@@ -457,7 +465,43 @@ def main():
         else:
             print(json_object)
 
-        return
+        exit(0)
+
+    if args.restore:
+
+        f = open(args.restore)
+        data = json.load(f)
+        f.close()
+
+        if args.target != 'all':
+
+            if int(args.target) >= len(found_setup.ssc_devices):
+                print("Target out of range. There are " +
+                      str(len(found_setup.ssc_devices))+" speaker(s) in khtool.json.")
+                exit(1)
+
+            device = found_setup.ssc_devices[int(args.target)]
+            device.connect(interface=interface)
+
+            if hasattr(device, 'connected'):
+                if not device.connected:
+                    print("device "+str(device.ip)+" is not online")
+                    exit(1)
+
+            restore_device(device, data['devices'][device.ip])
+        else:
+            for device in found_setup.ssc_devices:
+                device.connect(interface=interface)
+
+                if hasattr(device, 'connected'):
+                    if not device.connected:
+                        print("device "+str(device.ip)+" is not online")
+                        exit(1)
+
+                if device.ip in data['devices']:
+                    restore_device(device, data['devices'][device.ip])
+
+        exit(0)
 
     if args.target != 'all':
 
@@ -467,17 +511,17 @@ def main():
             exit(1)
 
         device = found_setup.ssc_devices[int(args.target)]
-        device.connect(interface='%'+args.interface)
+        device.connect(interface=interface)
 
         print_header(device)
         handle_device(args, device)
         print("")
 
     else:
-        for ssc_device in found_setup.ssc_devices:
-            ssc_device.connect(interface='%'+args.interface)
-            print_header(ssc_device)
-            handle_device(args, ssc_device)
+        for device in found_setup.ssc_devices:
+            device.connect(interface=interface)
+            print_header(device)
+            handle_device(args, device)
             print("")
 
 

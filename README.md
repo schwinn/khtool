@@ -109,9 +109,14 @@ IPv6 address: fe80::2a36:38ff:fexx:xxxx
 {"m":{"audio":-94.1}}
 ```
 
-Backup settings to JSON file (The restore will be implemented in a future version. I use it currently to compare the settings with diff after a MA 1 setup.) 
+Backup settings to JSON file
 ```
-./khtool.py -i en1 -b backup-230101.json --comment "MA1 Adjustment with Lowshelf 75hz, -0.7db, q1.0"
+./khtool.py -i en1 --backup backup-230101.json --comment "MA1 Adjustment with Lowshelf 75hz, -0.7db, q1.0"
+```
+
+Restore settings
+```
+./khtool.py -i en1 --restore backup-230101.json
 ```
 
 Print help
@@ -126,9 +131,9 @@ options:
   -h, --help            show this help message and exit
   --scan                scan for devices and ignore the khtool.json file
   -q, --query           query loudspeaker(s)
-  -b BACKUP, --backup BACKUP
-                        generate json backup of loudspeaker(s) and save it to
+  --backup BACKUP       generate json backup of loudspeaker(s) and save it to
                         [filename]
+  --restore RESTORE     restore configuration from [filename]
   --comment COMMENT     comment for backup file
   --save                performs a save_settings command to the devices (only
                         for KH 80/KH 150)
@@ -139,6 +144,7 @@ options:
   --level LEVEL         set level in dB [0-120]
   --mute                mute speaker(s)
   --unmute              unmute speaker(s)
+  --expert EXPERT       send a custom command
   -i INTERFACE, --interface INTERFACE
                         network interface to use (e.g. en0)
   -t {all,0,1,2,3,4,5,6,7,8}, --target {all,0,1,2,3,4,5,6,7,8}
