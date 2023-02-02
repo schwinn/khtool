@@ -101,12 +101,30 @@ python3 ./khtool.py -i en1 --save
 {"device":{"save_settings":true}}
 ```
 
-Using the expert option - e.g. query the input level
+Using the expert option - Querying the input level
 ``` 
 python3 ./khtool.py -i en1 -t 1 --expert '{"m":{"audio":null}}'
 Used Device:  Right
 IPv6 address: fe80::2a36:38ff:fexx:xxxx
 {"m":{"audio":-94.1}}
+```
+
+Using the expert option - Setting the auto standby time to 30 minutes
+``` 
+python3 ./khtool.py -i en1 --expert '{"device":{"standby":{"auto_standby_time":30}}}'
+Used Device:  Left Subwoofer
+IPv6 address: fe80::2a36:38ff:fe60:97d2
+{"device":{"standby":{"auto_standby_time":30}}}
+
+Used Device:  Right
+IPv6 address: fe80::2a36:38ff:fe60:b288
+{"device":{"standby":{"auto_standby_time":30}}}
+
+Used Device:  Left
+IPv6 address: fe80::2a36:38ff:fe60:b411
+{"device":{"standby":{"auto_standby_time":30}}}
+
+python3 ./khtool.py -i en1 --save
 ```
 
 Backup settings to JSON file
