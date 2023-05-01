@@ -10,7 +10,7 @@ import signal
 
 
 __author__ = "Thorsten Schwinn"
-__version__ = '0.13'
+__version__ = '0.14'
 __license__ = "MIT"
 
 
@@ -52,6 +52,14 @@ def restore_device(device, db):
         send_print(device, i)
 
 
+def is_speaker(product):
+
+    if product == 'KH 80' or product == 'KH 150' or product == 'KH 120 II':
+        return True
+
+    return False
+    
+
 def backup_device(device, db):
 
     if hasattr(device, 'connected'):
@@ -65,7 +73,7 @@ def backup_device(device, db):
 
     commands = send_add_array(device, '{"device":{"name":null}}', commands)
 
-    if product == 'KH 80' or product == 'KH 150':
+    if is_speaker(product):
         commands = send_add_array(
             device, '{"ui":{"logo":{"brightness":null}}}', commands)
         commands = send_add_array(
@@ -80,7 +88,7 @@ def backup_device(device, db):
     commands = send_add_array(
         device, '{"audio":{"out":{"mute":null}}}', commands)
 
-    if product == 'KH 80' or product == 'KH 150':
+    if is_speaker(product):
         commands = send_add_array(
             device, '{"audio":{"out":{"delay":null}}}', commands)
         commands = send_add_array(
@@ -184,7 +192,7 @@ def query_device(device):
     send_print(device, '{"device":{"standby":{"auto_standby_time":null}}}')
     send_print(device, '{"device":{"standby":{"level":null}}}')
 
-    if product == 'KH 80' or product == 'KH 150':
+    if is_speaker(product):
         send_print(device, '{"ui":{"logo":{"brightness":null}}}')
         send_print(device, '{"audio":{"in":{"gain":null}}}')
         send_print(device, '{"audio":{"in":{"phase_invert":null}}}')
@@ -193,7 +201,7 @@ def query_device(device):
     send_print(device, '{"audio":{"out":{"dimm":null}}}')
     send_print(device, '{"audio":{"out":{"mute":null}}}')
 
-    if product == 'KH 80' or product == 'KH 150':
+    if is_speaker(product):
         send_print(device, '{"audio":{"out":{"delay":null}}}')
         send_print(device, '{"audio":{"out":{"solo":null}}}')
         send_print(device, '{"audio":{"out":{"phase_correction":null}}}')
@@ -375,9 +383,9 @@ def main():
     parser.add_argument('--comment', action="store",
                         help="comment for backup file")
     parser.add_argument('--save', action="store_true",
-                        help="performs a save_settings command to the devices (only for KH 80/KH 150)")
+                        help="performs a save_settings command to the devices (only for KH 80/KH 150/KH 120 II)")
     parser.add_argument('--brightness', action="store",
-                        type=int, help="set logo brightness [0-100] (only for KH 80/KH 150)")
+                        type=int, help="set logo brightness [0-100] (only for KH 80/KH 150/KH 120 II)")
     parser.add_argument('--delay', action="store", type=int,
                         help="set delay in 1/48khz samples [0-3360]")
     parser.add_argument('--dimm', action="store", type=float,

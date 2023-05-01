@@ -140,23 +140,19 @@ Restore settings
 Print help
 ```
 python3 ./khtool.py -h
-usage: khtool.py [-h] [--scan] [-q] [-b BACKUP] [--comment COMMENT] [--save]
-                 [--brightness BRIGHTNESS] [--delay DELAY] [--dimm DIMM]
-                 [--level LEVEL] [--mute] [--unmute] -i INTERFACE
-                 [-t {all,0,1,2,3,4,5,6,7,8}] [-v]
+usage: khtool.py [-h] [--scan] [-q] [--backup BACKUP] [--restore RESTORE] [--comment COMMENT] [--save] [--brightness BRIGHTNESS] [--delay DELAY] [--dimm DIMM] [--level LEVEL] [--mute]
+                 [--unmute] [--expert EXPERT] -i INTERFACE [-t {all,0,1,2,3,4,5,6,7,8}] [-v]
 
 options:
   -h, --help            show this help message and exit
   --scan                scan for devices and ignore the khtool.json file
   -q, --query           query loudspeaker(s)
-  --backup BACKUP       generate json backup of loudspeaker(s) and save it to
-                        [filename]
+  --backup BACKUP       generate json backup of loudspeaker(s) and save it to [filename]
   --restore RESTORE     restore configuration from [filename]
   --comment COMMENT     comment for backup file
-  --save                performs a save_settings command to the devices (only
-                        for KH 80/KH 150)
+  --save                performs a save_settings command to the devices (only for KH 80/KH 150/KH 120 II)
   --brightness BRIGHTNESS
-                        set logo brightness [0-100] (only for KH 80/KH 150)
+                        set logo brightness [0-100] (only for KH 80/KH 150/KH 120 II)
   --delay DELAY         set delay in 1/48khz samples [0-3360]
   --dimm DIMM           set dimm in dB [-120-0]
   --level LEVEL         set level in dB [0-120]
