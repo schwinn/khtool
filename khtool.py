@@ -7,10 +7,11 @@ import json
 import argparse
 import time
 import signal
+import sys
 
 
 __author__ = "Thorsten Schwinn"
-__version__ = '0.14'
+__version__ = '0.15'
 __license__ = "MIT"
 
 
@@ -396,15 +397,21 @@ def main():
     parser.add_argument('--unmute', action="store_true",
                         help="unmute speaker(s)")
     parser.add_argument('--expert', action="store",  help="send a custom command")
-    parser.add_argument('-i', '--interface', action="store",
+
+    if os.name != 'nt':
+      parser.add_argument('-i', '--interface', action="store",
                         required=True, help='network interface to use (e.g. en0)')
+
     parser.add_argument('-t', '--target', action='store', default='all', choices=[
                         'all', '0', '1', '2', '3', '4', '5', '6', '7', '8'], help='use all speakers or only the selected one')
     parser.add_argument('-v', '--version', action='version',
                         version='%(prog)s ' + __version__)
     args = parser.parse_args()
 
-    interface = '%'+args.interface
+    if os.name == 'nt':
+      interface = ""
+    else:
+      interface = '%'+args.interface
 
     if args.brightness:
         if args.brightness < 0 or args.brightness > 100:
