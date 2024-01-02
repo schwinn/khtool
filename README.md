@@ -3,7 +3,9 @@ This is a simple tool for querying or changing the settings of Neumann KH DSP lo
 
 ## Libraries Required
 
-1. pyssc `pip3 install pyssc`
+Please install my fork of the pyssc library.
+
+`pip3 install https://github.com/schwinn/pyssc/archive/master.zip#egg=pyssc`
 
 ## Usage
 
