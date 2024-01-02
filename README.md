@@ -170,7 +170,7 @@ options:
 
 ## Notes
 
-In Windows, the interface index is used instead of the name. In the following example, 14 is used as the name instead of Ethernet0. 
+On Windows, the interface index is used instead of the name. In the following example, 14 is used as the name instead of Ethernet0. 
 
 ```
 C:\>netsh interface ipv6 show interface
