@@ -168,8 +168,19 @@ options:
   -v, --version         show program's version number and exit
 ```
 
-## Note
+## Notes
 
-The tool was only tested with a pair of Neumann KH 80 DSP speakers and a KH 750 DSP subwoofer under macOS Monterey. Python3 must be installed on macOS to use the tool. Communication with the speakers is exclusively via IPv6. Therefore, it must be activated in the operating system.
+In Windows, the interface index is used instead of the name. In the following example, 14 is used as the name instead of Ethernet0. 
+
+```
+C:\>netsh interface ipv6 show interface
+
+Idx     Met         MTU          State                Name
+---  ----------  ----------  ------------  ---------------------------
+  1          75  4294967295  connected     Loopback Pseudo-Interface 1
+ 14          25        1500  connected     Ethernet0
+```
+
+Communication with the speakers is exclusively via IPv6. Therefore, it must be activated in the operating system.
 
 Use at your own risk. 
