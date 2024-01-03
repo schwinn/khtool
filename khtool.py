@@ -10,7 +10,7 @@ import signal
 
 
 __author__ = "Thorsten Schwinn"
-__version__ = '0.14'
+__version__ = '0.15a'
 __license__ = "MIT"
 
 
