@@ -430,7 +430,7 @@ def main():
         found_setup = ssc.Ssc_device_setup()
         found_setup.from_json('khtool.json')
     else:
-        found_setup = ssc.scan()
+        found_setup = ssc.scan(scan_time_seconds=10)
         if found_setup is not None:
             found_setup.to_json('khtool.json')
             print("Found "+str(len(found_setup.ssc_devices)) +
