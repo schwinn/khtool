@@ -7,10 +7,11 @@ import json
 import argparse
 import time
 import signal
+import re
 
 
 __author__ = "Thorsten Schwinn"
-__version__ = '0.15a'
+__version__ = '0.16'
 __license__ = "MIT"
 
 
@@ -19,7 +20,8 @@ interface = ''
 
 
 def send_command(device, str):
-    ssc_transaction = device.send_ssc(str, interface=interface)
+    x = get_interface(device)
+    ssc_transaction = device.send_ssc(str, interface=x)
     if hasattr(ssc_transaction, 'RX'):
         return ssc_transaction.RX.replace("\r\n", "")
 
@@ -31,12 +33,22 @@ def send_print(device, str):
 
 
 def send_add_array(device, str, x):
-    ssc_transaction = device.send_ssc(str, interface=interface)
+    x = get_interface(device)
+    ssc_transaction = device.send_ssc(str, interface=x)
 
     if hasattr(ssc_transaction, 'RX'):
         x.append(ssc_transaction.RX.replace("\r\n", ""))
 
     return x
+
+
+def get_interface(device):
+    pattern = '^fe80::'
+    result = re.match(pattern, str(device.ip))
+    if result:
+      return interface
+    else:
+      return ""
 
 
 def restore_device(device, db):
@@ -283,7 +295,8 @@ def query_device(device):
 
 
 def print_header(device):
-    ssc_transaction = device.send_ssc('{"device":{"name":null}}', interface=interface)
+    x = get_interface(device) 
+    ssc_transaction = device.send_ssc('{"device":{"name":null}}', interface=x)
 
     if hasattr(ssc_transaction, 'RX'):
         y = json.loads(ssc_transaction.RX)
@@ -292,7 +305,8 @@ def print_header(device):
 
 
 def get_product(device):
-    ssc_transaction = device.send_ssc('{"device":{"identity":{"product":null}}}', interface=interface)
+    x = get_interface(device)
+    ssc_transaction = device.send_ssc('{"device":{"identity":{"product":null}}}', interface=x)
 
     if hasattr(ssc_transaction, 'RX'):
         y = json.loads(ssc_transaction.RX)
@@ -302,7 +316,8 @@ def get_product(device):
 
 
 def get_serial(device):
-    ssc_transaction = device.send_ssc('{"device":{"identity":{"serial":null}}}', interface=interface)
+    x = get_interface(device)
+    ssc_transaction = device.send_ssc('{"device":{"identity":{"serial":null}}}', interface=x)
 
     if hasattr(ssc_transaction, 'RX'):
         y = json.loads(ssc_transaction.RX)
@@ -312,7 +327,8 @@ def get_serial(device):
 
 
 def get_version(device):
-    ssc_transaction = device.send_ssc('{"device":{"identity":{"version":null}}}', interface=interface)
+    x = get_interface(device)
+    ssc_transaction = device.send_ssc('{"device":{"identity":{"version":null}}}', interface=x)
 
     if hasattr(ssc_transaction, 'RX'):
         y = json.loads(ssc_transaction.RX)
@@ -322,7 +338,8 @@ def get_version(device):
 
 
 def get_vendor(device):
-    ssc_transaction = device.send_ssc('{"device":{"identity":{"vendor":null}}}', interface=interface)
+    x = get_interface(device)
+    ssc_transaction = device.send_ssc('{"device":{"identity":{"vendor":null}}}', interface=x)
 
     if hasattr(ssc_transaction, 'RX'):
         y = json.loads(ssc_transaction.RX)
@@ -335,7 +352,9 @@ def handle_device(args, device):
 
     if hasattr(device, 'connected'):
         if not device.connected:
+            x = get_interface(device)
             print("device "+str(device.ip)+" is not online")
+            print("Used interface: "+x)
             exit(1)
 
     if args.query:
@@ -404,6 +423,7 @@ def main():
                         version='%(prog)s ' + __version__)
     args = parser.parse_args()
 
+    global interface
     interface = '%'+args.interface
 
     if args.brightness:
@@ -449,11 +469,13 @@ def main():
                 exit(1)
 
             device = found_setup.ssc_devices[int(args.target)]
-            device.connect(interface=interface)
+            x = get_interface(device)
+            device.connect(interface=x)
             devicedb = backup_device(device, devicedb)
         else:
             for device in found_setup.ssc_devices:
-                device.connect(interface=interface)
+                x = get_interface(device)
+                device.connect(interface=x)
                 devicedb = backup_device(device, devicedb)
 
         backup = {"devices": devicedb}
@@ -489,7 +511,8 @@ def main():
                 exit(1)
 
             device = found_setup.ssc_devices[int(args.target)]
-            device.connect(interface=interface)
+            x = get_interface(device)
+            device.connect(interface=x)
 
             if hasattr(device, 'connected'):
                 if not device.connected:
@@ -499,7 +522,8 @@ def main():
             restore_device(device, data['devices'][device.ip])
         else:
             for device in found_setup.ssc_devices:
-                device.connect(interface=interface)
+                x = get_interface(device)
+                device.connect(interface=x)
 
                 if hasattr(device, 'connected'):
                     if not device.connected:
@@ -519,7 +543,8 @@ def main():
             exit(1)
 
         device = found_setup.ssc_devices[int(args.target)]
-        device.connect(interface=interface)
+        x = get_interface(device)
+        device.connect(interface=x)
 
         print_header(device)
         handle_device(args, device)
@@ -527,7 +552,8 @@ def main():
 
     else:
         for device in found_setup.ssc_devices:
-            device.connect(interface=interface)
+            x = get_interface(device)
+            device.connect(interface=x)
             print_header(device)
             handle_device(args, device)
             print("")
