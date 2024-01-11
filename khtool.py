@@ -11,7 +11,7 @@ import re
 
 
 __author__ = "Thorsten Schwinn"
-__version__ = '0.16'
+__version__ = '0.17'
 __license__ = "MIT"
 
 
@@ -32,23 +32,23 @@ def send_print(device, str):
     print(send_command(device, str))
 
 
-def send_add_array(device, str, x):
+def send_add_array(device, str, y):
     x = get_interface(device)
     ssc_transaction = device.send_ssc(str, interface=x)
 
     if hasattr(ssc_transaction, 'RX'):
-        x.append(ssc_transaction.RX.replace("\r\n", ""))
+        y.append(ssc_transaction.RX.replace("\r\n", ""))
 
-    return x
+    return y
 
 
 def get_interface(device):
     pattern = '^fe80::'
     result = re.match(pattern, str(device.ip))
     if result:
-      return interface
+        return interface
     else:
-      return ""
+        return ""
 
 
 def restore_device(device, db):
@@ -58,6 +58,10 @@ def restore_device(device, db):
 
     if get_serial(device) != db['serial']:
         print("Serial number does not match.")
+        exit(1)
+
+    if get_version(device) != db['version']:
+        print("Version does not match.")
         exit(1)
 
     for i in db['commands']:
@@ -70,7 +74,7 @@ def is_speaker(product):
         return True
 
     return False
-    
+
 
 def backup_device(device, db):
 
@@ -81,104 +85,114 @@ def backup_device(device, db):
 
     product = get_product(device)
 
+    if product == 'KH 750':
+        version = get_version(device)
+        pattern = '^1_0|^1_1'
+        result = re.match(pattern, version)
+        if result:
+            kh750fwnew = 0
+        else:
+            kh750fwnew = 1
+    else:
+        kh750fwnew = -1
+
     commands = []
 
-    commands = send_add_array(device, '{"device":{"name":null}}', commands)
+    if product == 'KH 750' and kh750fwnew == 1:
+        commands = send_add_array(device, '{"device":{"name":null}}', commands)
 
-    if is_speaker(product):
-        commands = send_add_array(
-            device, '{"ui":{"logo":{"brightness":null}}}', commands)
-        commands = send_add_array(
-            device, '{"audio":{"in":{"gain":null}}}', commands)
-        commands = send_add_array(
-            device, '{"audio":{"in":{"phase_invert":null}}}', commands)
-
-    commands = send_add_array(
-        device, '{"audio":{"out":{"level":null}}}', commands)
-    commands = send_add_array(
-        device, '{"audio":{"out":{"dimm":null}}}', commands)
-    commands = send_add_array(
-        device, '{"audio":{"out":{"mute":null}}}', commands)
-
-    if is_speaker(product):
-        commands = send_add_array(
-            device, '{"audio":{"out":{"delay":null}}}', commands)
-        commands = send_add_array(
-            device, '{"audio":{"out":{"solo":null}}}', commands)
-        commands = send_add_array(
-            device, '{"audio":{"out":{"phase_correction":null}}}', commands)
-        commands = send_add_array(
-            device, '{"audio":{"out":{"equalizer":{"enabled":null}}}}', commands)
-        commands = send_add_array(
-            device, '{"audio":{"out":{"equalizer":{"type":null}}}}', commands)
-        commands = send_add_array(
-            device, '{"audio":{"out":{"equalizer":{"frequency":null}}}}', commands)
-        commands = send_add_array(
-            device, '{"audio":{"out":{"equalizer":{"q":null}}}}', commands)
-        commands = send_add_array(
-            device, '{"audio":{"out":{"equalizer":{"gain":null}}}}', commands)
-        commands = send_add_array(
-            device, '{"audio":{"out":{"equalizer":{"boost":null}}}}', commands)
-
-    if product == 'KH 750':
-        commands = send_add_array(
-            device, '{"audio":{"in":{"analog":null}}}', commands)
-        commands = send_add_array(
-            device, '{"audio":{"in":{"delay":null}}}', commands)
-        commands = send_add_array(
-            device, '{"audio":{"in":{"interface":null}}}', commands)
+        commands = send_add_array(device, '{"audio":{"in":{"delay":null}}}', commands)
+        commands = send_add_array(device, '{"audio":{"in":{"interface":null}}}', commands)
 
         for x in range(1, 6):
             if x != 5:
-                commands = send_add_array(
-                    device, '{"audio":{"out'+str(x)+'":{"loudspeaker":null}}}', commands)
-                commands = send_add_array(
-                    device, '{"audio":{"out'+str(x)+'":{"on":null}}}', commands)
-            commands = send_add_array(
-                device, '{"audio":{"out'+str(x)+'":{"gain":null}}}', commands)
-            commands = send_add_array(
-                device, '{"audio":{"out'+str(x)+'":{"delay":null}}}', commands)
-
-            commands = send_add_array(
-                device, '{"audio":{"out'+str(x)+'":{"mixer":{"levels":null}}}}', commands)
+                commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"loudspeaker":null}}}', commands)
+            commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"delay":null}}}', commands)
+            commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"level":null}}}', commands)
+            commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"mute":null}}}', commands)
+            commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"mixer":{"levels":null}}}}', commands)
+            commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"mixer":{"inputs":null}}}}', commands)
 
             for z in range(1, 3):
-                commands = send_add_array(
-                    device, '{"audio":{"out'+str(x)+'":{"eq1":{"in'+str(z)+'":{"enabled":null}}}}}', commands)
-                commands = send_add_array(
-                    device, '{"audio":{"out'+str(x)+'":{"eq1":{"in'+str(z)+'":{"q":null}}}}}', commands)
-                commands = send_add_array(
-                    device, '{"audio":{"out'+str(x)+'":{"eq1":{"in'+str(z)+'":{"frequency":null}}}}}', commands)
-                commands = send_add_array(
-                    device, '{"audio":{"out'+str(x)+'":{"eq1":{"in'+str(z)+'":{"gain":null}}}}}', commands)
-                commands = send_add_array(
-                    device, '{"audio":{"out'+str(x)+'":{"eq1":{"in'+str(z)+'":{"type":null}}}}}', commands)
+                commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"eq1":{"in'+str(z)+'":{"enabled":null}}}}}', commands)
+                commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"eq1":{"in'+str(z)+'":{"q":null}}}}}', commands)
+                commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"eq1":{"in'+str(z)+'":{"frequency":null}}}}}', commands)
+                commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"eq1":{"in'+str(z)+'":{"gain":null}}}}}', commands)
+                commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"eq1":{"in'+str(z)+'":{"type":null}}}}}', commands)
+                commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"eq1":{"in'+str(z)+'":{"input":null}}}}}', commands)
 
-            commands = send_add_array(
-                device, '{"audio":{"out'+str(x)+'":{"eq2":{"enabled":null}}}}', commands)
-            commands = send_add_array(
-                device, '{"audio":{"out'+str(x)+'":{"eq2":{"type":null}}}}', commands)
-            commands = send_add_array(
-                device, '{"audio":{"out'+str(x)+'":{"eq2":{"frequency":null}}}}', commands)
-            commands = send_add_array(
-                device, '{"audio":{"out'+str(x)+'":{"eq2":{"q":null}}}}', commands)
-            commands = send_add_array(
-                device, '{"audio":{"out'+str(x)+'":{"eq2":{"gain":null}}}}', commands)
-            commands = send_add_array(
-                device, '{"audio":{"out'+str(x)+'":{"eq2":{"boost":null}}}}', commands)
+            commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"eq2":{"enabled":null}}}}', commands)
+            commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"eq2":{"type":null}}}}', commands)
+            commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"eq2":{"frequency":null}}}}', commands)
+            commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"eq2":{"q":null}}}}', commands)
+            commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"eq2":{"gain":null}}}}', commands)
+            commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"eq2":{"boost":null}}}}', commands)
 
-            commands = send_add_array(
-                device, '{"audio":{"out'+str(x)+'":{"eq3":{"enabled":null}}}}', commands)
-            commands = send_add_array(
-                device, '{"audio":{"out'+str(x)+'":{"eq3":{"type":null}}}}', commands)
-            commands = send_add_array(
-                device, '{"audio":{"out'+str(x)+'":{"eq3":{"frequency":null}}}}', commands)
-            commands = send_add_array(
-                device, '{"audio":{"out'+str(x)+'":{"eq3":{"q":null}}}}', commands)
-            commands = send_add_array(
-                device, '{"audio":{"out'+str(x)+'":{"eq3":{"gain":null}}}}', commands)
-            commands = send_add_array(
-                device, '{"audio":{"out'+str(x)+'":{"eq3":{"boost":null}}}}', commands)
+            commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"eq3":{"enabled":null}}}}', commands)
+            commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"eq3":{"type":null}}}}', commands)
+            commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"eq3":{"frequency":null}}}}', commands)
+            commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"eq3":{"q":null}}}}', commands)
+            commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"eq3":{"gain":null}}}}', commands)
+            commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"eq3":{"boost":null}}}}', commands)
+
+    else:
+
+        commands = send_add_array(device, '{"device":{"name":null}}', commands)
+
+        if is_speaker(product):
+            commands = send_add_array(device, '{"ui":{"logo":{"brightness":null}}}', commands)
+            commands = send_add_array(device, '{"audio":{"in":{"gain":null}}}', commands)
+            commands = send_add_array(device, '{"audio":{"in":{"phase_invert":null}}}', commands)
+
+        commands = send_add_array(device, '{"audio":{"out":{"level":null}}}', commands)
+        commands = send_add_array(device, '{"audio":{"out":{"dimm":null}}}', commands)
+        commands = send_add_array(device, '{"audio":{"out":{"mute":null}}}', commands)
+
+        if is_speaker(product):
+            commands = send_add_array(device, '{"audio":{"out":{"delay":null}}}', commands)
+            commands = send_add_array(device, '{"audio":{"out":{"solo":null}}}', commands)
+            commands = send_add_array(device, '{"audio":{"out":{"phase_correction":null}}}', commands)
+            commands = send_add_array(device, '{"audio":{"out":{"equalizer":{"enabled":null}}}}', commands)
+            commands = send_add_array(device, '{"audio":{"out":{"equalizer":{"type":null}}}}', commands)
+            commands = send_add_array(device, '{"audio":{"out":{"equalizer":{"frequency":null}}}}', commands)
+            commands = send_add_array(device, '{"audio":{"out":{"equalizer":{"q":null}}}}', commands)
+            commands = send_add_array(device, '{"audio":{"out":{"equalizer":{"gain":null}}}}', commands)
+            commands = send_add_array(device, '{"audio":{"out":{"equalizer":{"boost":null}}}}', commands)
+
+        if product == 'KH 750':
+            commands = send_add_array(device, '{"audio":{"in":{"analog":null}}}', commands)
+            commands = send_add_array(device, '{"audio":{"in":{"delay":null}}}', commands)
+            commands = send_add_array(device, '{"audio":{"in":{"interface":null}}}', commands)
+
+            for x in range(1, 6):
+                if x != 5:
+                    commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"loudspeaker":null}}}', commands)
+                    commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"on":null}}}', commands)
+                commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"gain":null}}}', commands)
+                commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"delay":null}}}', commands)
+
+                commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"mixer":{"levels":null}}}}', commands)
+
+                for z in range(1, 3):
+                    commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"eq1":{"in'+str(z)+'":{"enabled":null}}}}}', commands)
+                    commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"eq1":{"in'+str(z)+'":{"q":null}}}}}', commands)
+                    commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"eq1":{"in'+str(z)+'":{"frequency":null}}}}}', commands)
+                    commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"eq1":{"in'+str(z)+'":{"gain":null}}}}}', commands)
+                    commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"eq1":{"in'+str(z)+'":{"type":null}}}}}', commands)
+
+                commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"eq2":{"enabled":null}}}}', commands)
+                commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"eq2":{"type":null}}}}', commands)
+                commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"eq2":{"frequency":null}}}}', commands)
+                commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"eq2":{"q":null}}}}', commands)
+                commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"eq2":{"gain":null}}}}', commands)
+                commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"eq2":{"boost":null}}}}', commands)
+
+                commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"eq3":{"enabled":null}}}}', commands)
+                commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"eq3":{"type":null}}}}', commands)
+                commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"eq3":{"frequency":null}}}}', commands)
+                commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"eq3":{"q":null}}}}', commands)
+                commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"eq3":{"gain":null}}}}', commands)
+                commands = send_add_array(device, '{"audio":{"out'+str(x)+'":{"eq3":{"boost":null}}}}', commands)
 
     db[device.ip] = {"commands": []}
     db[device.ip]["commands"] = commands
@@ -194,6 +208,76 @@ def query_device(device):
     print("*** query device settings ***")
 
     product = get_product(device)
+
+    if product == 'KH 750':
+        version = get_version(device)
+        pattern = '^1_0|^1_1'
+        result = re.match(pattern, version)
+        if result:
+            kh750fwnew = 0
+        else:
+            kh750fwnew = 1
+    else:
+        kh750fwnew = -1
+
+    if product == 'KH 750' and kh750fwnew == 1:
+        send_print(device, '{"device":{"name":null}}')
+        send_print(device, '{"device":{"identity":{"vendor":null}}}')
+        send_print(device, '{"device":{"identity":{"product":null}}}')
+        send_print(device, '{"device":{"identity":{"serial":null}}}')
+        send_print(device, '{"device":{"identity":{"version":null}}}')
+        send_print(device, '{"device":{"standby":{"enabled":null}}}')
+        send_print(device, '{"device":{"standby":{"auto_standby_time":null}}}')
+        send_print(device, '{"device":{"standby":{"level":null}}}')
+        send_print(device, '{"device":{"standby":{"countdown":null}}}')
+
+        send_print(device, '{"audio":{"in":{"delay":null}}}')
+        send_print(device, '{"audio":{"in":{"interface":null}}}')
+        send_print(device, '{"audio":{"in1":{"label":null}}}')
+        send_print(device, '{"audio":{"in2":{"label":null}}}')
+
+        for x in range(1, 6):
+            if x != 5:
+                send_print(
+                    device, '{"audio":{"out'+str(x)+'":{"loudspeaker":null}}}')
+                send_print(
+                    device, '{"audio":{"out'+str(x)+'":{"label":null}}}')
+
+            send_print(device, '{"audio":{"out'+str(x)+'":{"desc":null}}}')
+            send_print(device, '{"audio":{"out'+str(x)+'":{"delay":null}}}')
+            send_print(device, '{"audio":{"out'+str(x)+'":{"level":null}}}')
+            send_print(device, '{"audio":{"out'+str(x)+'":{"mute":null}}}')
+            send_print(device, '{"audio":{"out'+str(x)+'":{"mixer":{"levels":null}}}}')
+            send_print(device, '{"audio":{"out'+str(x)+'":{"mixer":{"inputs":null}}}}')
+
+            send_print(
+                device, '{"audio":{"out'+str(x)+'":{"eq1":{"desc":null}}}}')
+
+            for z in range(1, 3):
+                send_print(device, '{"audio":{"out'+str(x)+'":{"eq1":{"in'+str(z)+'":{"enabled":null}}}}}')
+                send_print(device, '{"audio":{"out'+str(x)+'":{"eq1":{"in'+str(z)+'":{"q":null}}}}}')
+                send_print(device, '{"audio":{"out'+str(x)+'":{"eq1":{"in'+str(z)+'":{"frequency":null}}}}}')
+                send_print(device, '{"audio":{"out'+str(x)+'":{"eq1":{"in'+str(z)+'":{"gain":null}}}}}')
+                send_print(device, '{"audio":{"out'+str(x)+'":{"eq1":{"in'+str(z)+'":{"type":null}}}}}')
+                send_print(device, '{"audio":{"out'+str(x)+'":{"eq1":{"in'+str(z)+'":{"input":null}}}}}')
+
+            send_print(device, '{"audio":{"out'+str(x)+'":{"eq2":{"enabled":null}}}}')
+            send_print(device, '{"audio":{"out'+str(x)+'":{"eq2":{"type":null}}}}')
+            send_print(device, '{"audio":{"out'+str(x)+'":{"eq2":{"frequency":null}}}}')
+            send_print(device, '{"audio":{"out'+str(x)+'":{"eq2":{"q":null}}}}')
+            send_print(device, '{"audio":{"out'+str(x)+'":{"eq2":{"gain":null}}}}')
+            send_print(device, '{"audio":{"out'+str(x)+'":{"eq2":{"boost":null}}}}')
+            send_print(device, '{"audio":{"out'+str(x)+'":{"eq2":{"desc":null}}}}')
+
+            send_print(device, '{"audio":{"out'+str(x)+'":{"eq3":{"enabled":null}}}}')
+            send_print(device, '{"audio":{"out'+str(x)+'":{"eq3":{"type":null}}}}')
+            send_print(device, '{"audio":{"out'+str(x)+'":{"eq3":{"frequency":null}}}}')
+            send_print(device, '{"audio":{"out'+str(x)+'":{"eq3":{"q":null}}}}')
+            send_print(device, '{"audio":{"out'+str(x)+'":{"eq3":{"gain":null}}}}')
+            send_print(device, '{"audio":{"out'+str(x)+'":{"eq3":{"boost":null}}}}')
+            send_print(device, '{"audio":{"out'+str(x)+'":{"eq3":{"desc":null}}}}')
+
+        return
 
     send_print(device, '{"device":{"name":null}}')
     send_print(device, '{"device":{"identity":{"vendor":null}}}')
@@ -220,8 +304,7 @@ def query_device(device):
         send_print(device, '{"audio":{"out":{"limiter_mode":null}}}')
         send_print(device, '{"audio":{"out":{"equalizer":{"enabled":null}}}}')
         send_print(device, '{"audio":{"out":{"equalizer":{"type":null}}}}')
-        send_print(
-            device, '{"audio":{"out":{"equalizer":{"frequency":null}}}}')
+        send_print(device, '{"audio":{"out":{"equalizer":{"frequency":null}}}}')
         send_print(device, '{"audio":{"out":{"equalizer":{"q":null}}}}')
         send_print(device, '{"audio":{"out":{"equalizer":{"gain":null}}}}')
         send_print(device, '{"audio":{"out":{"equalizer":{"boost":null}}}}')
@@ -235,67 +318,44 @@ def query_device(device):
 
         for x in range(1, 6):
             if x != 5:
-                send_print(
-                    device, '{"audio":{"out'+str(x)+'":{"loudspeaker":null}}}')
+                send_print(device, '{"audio":{"out'+str(x)+'":{"loudspeaker":null}}}')
                 send_print(device, '{"audio":{"out'+str(x)+'":{"on":null}}}')
-                send_print(
-                    device, '{"audio":{"out'+str(x)+'":{"label":null}}}')
+                send_print(device, '{"audio":{"out'+str(x)+'":{"label":null}}}')
             send_print(device, '{"audio":{"out'+str(x)+'":{"gain":null}}}')
             send_print(device, '{"audio":{"out'+str(x)+'":{"desc":null}}}')
             send_print(device, '{"audio":{"out'+str(x)+'":{"delay":null}}}')
             send_print(device, '{"audio":{"out'+str(x)+'":{"control":null}}}')
 
-            send_print(
-                device, '{"audio":{"out'+str(x)+'":{"mixer":{"levels":null}}}}')
+            send_print(device, '{"audio":{"out'+str(x)+'":{"mixer":{"levels":null}}}}')
 
-            send_print(
-                device, '{"audio":{"out'+str(x)+'":{"eq1":{"desc":null}}}}')
+            send_print(device, '{"audio":{"out'+str(x)+'":{"eq1":{"desc":null}}}}')
 
             for z in range(1, 3):
-                send_print(
-                    device, '{"audio":{"out'+str(x)+'":{"eq1":{"in'+str(z)+'":{"enabled":null}}}}}')
-                send_print(
-                    device, '{"audio":{"out'+str(x)+'":{"eq1":{"in'+str(z)+'":{"q":null}}}}}')
-                send_print(
-                    device, '{"audio":{"out'+str(x)+'":{"eq1":{"in'+str(z)+'":{"frequency":null}}}}}')
-                send_print(
-                    device, '{"audio":{"out'+str(x)+'":{"eq1":{"in'+str(z)+'":{"gain":null}}}}}')
-                send_print(
-                    device, '{"audio":{"out'+str(x)+'":{"eq1":{"in'+str(z)+'":{"type":null}}}}}')
+                send_print(device, '{"audio":{"out'+str(x)+'":{"eq1":{"in'+str(z)+'":{"enabled":null}}}}}')
+                send_print(device, '{"audio":{"out'+str(x)+'":{"eq1":{"in'+str(z)+'":{"q":null}}}}}')
+                send_print(device, '{"audio":{"out'+str(x)+'":{"eq1":{"in'+str(z)+'":{"frequency":null}}}}}')
+                send_print(device, '{"audio":{"out'+str(x)+'":{"eq1":{"in'+str(z)+'":{"gain":null}}}}}')
+                send_print(device, '{"audio":{"out'+str(x)+'":{"eq1":{"in'+str(z)+'":{"type":null}}}}}')
 
-            send_print(
-                device, '{"audio":{"out'+str(x)+'":{"eq2":{"enabled":null}}}}')
-            send_print(
-                device, '{"audio":{"out'+str(x)+'":{"eq2":{"type":null}}}}')
-            send_print(
-                device, '{"audio":{"out'+str(x)+'":{"eq2":{"frequency":null}}}}')
-            send_print(
-                device, '{"audio":{"out'+str(x)+'":{"eq2":{"q":null}}}}')
-            send_print(
-                device, '{"audio":{"out'+str(x)+'":{"eq2":{"gain":null}}}}')
-            send_print(
-                device, '{"audio":{"out'+str(x)+'":{"eq2":{"boost":null}}}}')
-            send_print(
-                device, '{"audio":{"out'+str(x)+'":{"eq2":{"desc":null}}}}')
+            send_print(device, '{"audio":{"out'+str(x)+'":{"eq2":{"enabled":null}}}}')
+            send_print(device, '{"audio":{"out'+str(x)+'":{"eq2":{"type":null}}}}')
+            send_print(device, '{"audio":{"out'+str(x)+'":{"eq2":{"frequency":null}}}}')
+            send_print(device, '{"audio":{"out'+str(x)+'":{"eq2":{"q":null}}}}')
+            send_print(device, '{"audio":{"out'+str(x)+'":{"eq2":{"gain":null}}}}')
+            send_print(device, '{"audio":{"out'+str(x)+'":{"eq2":{"boost":null}}}}')
+            send_print(device, '{"audio":{"out'+str(x)+'":{"eq2":{"desc":null}}}}')
 
-            send_print(
-                device, '{"audio":{"out'+str(x)+'":{"eq3":{"enabled":null}}}}')
-            send_print(
-                device, '{"audio":{"out'+str(x)+'":{"eq3":{"type":null}}}}')
-            send_print(
-                device, '{"audio":{"out'+str(x)+'":{"eq3":{"frequency":null}}}}')
-            send_print(
-                device, '{"audio":{"out'+str(x)+'":{"eq3":{"q":null}}}}')
-            send_print(
-                device, '{"audio":{"out'+str(x)+'":{"eq3":{"gain":null}}}}')
-            send_print(
-                device, '{"audio":{"out'+str(x)+'":{"eq3":{"boost":null}}}}')
-            send_print(
-                device, '{"audio":{"out'+str(x)+'":{"eq3":{"desc":null}}}}')
+            send_print(device, '{"audio":{"out'+str(x)+'":{"eq3":{"enabled":null}}}}')
+            send_print(device, '{"audio":{"out'+str(x)+'":{"eq3":{"type":null}}}}')
+            send_print(device, '{"audio":{"out'+str(x)+'":{"eq3":{"frequency":null}}}}')
+            send_print(device, '{"audio":{"out'+str(x)+'":{"eq3":{"q":null}}}}')
+            send_print(device, '{"audio":{"out'+str(x)+'":{"eq3":{"gain":null}}}}')
+            send_print(device, '{"audio":{"out'+str(x)+'":{"eq3":{"boost":null}}}}')
+            send_print(device, '{"audio":{"out'+str(x)+'":{"eq3":{"desc":null}}}}')
 
 
 def print_header(device):
-    x = get_interface(device) 
+    x = get_interface(device)
     ssc_transaction = device.send_ssc('{"device":{"name":null}}', interface=x)
 
     if hasattr(ssc_transaction, 'RX'):
@@ -357,6 +417,19 @@ def handle_device(args, device):
             print("Used interface: "+x)
             exit(1)
 
+    product = get_product(device)
+
+    if product == 'KH 750':
+        version = get_version(device)
+        pattern = '^1_0|^1_1'
+        result = re.match(pattern, version)
+        if result:
+            kh750fwnew = 0
+        else:
+            kh750fwnew = 1
+    else:
+        kh750fwnew = -1
+
     if args.query:
         query_device(device)
         return
@@ -373,14 +446,24 @@ def handle_device(args, device):
             device, '{"audio":{"out":{"dimm":'+f'{args.dimm:.1f}'+'}}}')
 
     if args.level != None:
-        send_print(
-            device, '{"audio":{"out":{"level":'+f'{args.level:.1f}'+'}}}')
+        if kh750fwnew == 1:
+            send_print(
+                device, '{"audio":{"out5":{"level":'+f'{args.level:.1f}'+'}}}')
+        else:
+            send_print(
+                device, '{"audio":{"out":{"level":'+f'{args.level:.1f}'+'}}}')
 
     if args.mute:
-        send_print(device, '{"audio":{"out":{"mute":true}}}')
+        if product == 'KH 750' and kh750fwnew == 1:
+            send_print(device, '{"audio":{"out5":{"mute":true}}}')
+        else:
+            send_print(device, '{"audio":{"out":{"mute":true}}}')
 
     if args.unmute:
-        send_print(device, '{"audio":{"out":{"mute":false}}}')
+        if product == 'KH 750' and kh750fwnew == 1:
+            send_print(device, '{"audio":{"out5":{"mute":false}}}')
+        else:
+            send_print(device, '{"audio":{"out":{"mute":false}}}')
 
     if args.expert:
         send_print(device, args.expert)
