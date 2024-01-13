@@ -181,6 +181,12 @@ Idx     Met         MTU          State                Name
  14          25        1500  connected     Ethernet0
 ```
 
+Double quotes in parameters must be escaped under Windows.
+
+```
+python khtool.py -i 14 --expert {\"m\":{\"audio\":null}} -t 0
+```
+
 Communication with the speakers is exclusively via IPv6. Therefore, it must be activated in the operating system.
 
 Use at your own risk. 
