@@ -11,7 +11,7 @@ import re
 
 
 __author__ = "Thorsten Schwinn"
-__version__ = "0.19"
+__version__ = "0.191"
 __license__ = "MIT"
 
 
@@ -456,6 +456,7 @@ def query_device(device):
     if product == "KH 150" or product == "KH 120 II":
         version = get_version(device)
         pattern = "^1_0"
+        result = re.match(pattern, version)
         if not result:
             send_print(device, '{"device":{"name":null}}')
             send_print(device, '{"device":{"identity":{"vendor":null}}}')
@@ -494,6 +495,8 @@ def query_device(device):
             send_print(device, '{"audio":{"out":{"eq3":{"gain":null}}}}')
             send_print(device, '{"audio":{"out":{"eq3":{"boost":null}}}}')
             send_print(device, '{"audio":{"out":{"eq3":{"desc":null}}}}')
+
+            return
 
     if product == "KH 750":
         version = get_version(device)
