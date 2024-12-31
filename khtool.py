@@ -96,249 +96,195 @@ def query_commands(device):
         pattern = "^1_0"
         result = re.match(pattern, version)
         if not result:
-            commands.append('{"device":{"name":null}}')
-            commands.append('{"device":{"identity":{"vendor":null}}}')
-            commands.append('{"device":{"identity":{"product":null}}}')
-            commands.append('{"device":{"identity":{"serial":null}}}')
-            commands.append('{"device":{"identity":{"version":null}}}')
-            commands.append('{"device":{"standby":{"enabled":null}}}')
-            commands.append('{"device":{"standby":{"auto_standby_time":null}}}')
-            commands.append('{"device":{"standby":{"level":null}}}')
-            commands.append('{"device":{"standby":{"countdown":null}}}')
-            commands.append('{"audio":{"in":{"interface":null}}}')
-            commands.append('{"audio":{"in1":{"label":null}}}')
-            commands.append('{"audio":{"in2":{"label":null}}}')
-
-            commands.append('{"audio":{"out":{"level":null}}}')
-            commands.append('{"audio":{"out":{"mute":null}}}')
-            commands.append('{"audio":{"out":{"delay":null}}}')
-            commands.append('{"audio":{"out":{"solo":null}}}')
-            commands.append('{"audio":{"out":{"phaseinversion":null}}}')
-
-            commands.append('{"audio":{"out":{"mixer":{"levels":null}}}}')
-            commands.append('{"audio":{"out":{"mixer":{"inputs":null}}}}')
-
-            commands.append('{"audio":{"out":{"eq2":{"enabled":null}}}}')
-            commands.append('{"audio":{"out":{"eq2":{"type":null}}}}')
-            commands.append('{"audio":{"out":{"eq2":{"frequency":null}}}}')
-            commands.append('{"audio":{"out":{"eq2":{"q":null}}}}')
-            commands.append('{"audio":{"out":{"eq2":{"gain":null}}}}')
-            commands.append('{"audio":{"out":{"eq2":{"boost":null}}}}')
-            commands.append('{"audio":{"out":{"eq2":{"desc":null}}}}')
-
-            commands.append('{"audio":{"out":{"eq3":{"enabled":null}}}}')
-            commands.append('{"audio":{"out":{"eq3":{"type":null}}}}')
-            commands.append('{"audio":{"out":{"eq3":{"frequency":null}}}}')
-            commands.append('{"audio":{"out":{"eq3":{"q":null}}}}')
-            commands.append('{"audio":{"out":{"eq3":{"gain":null}}}}')
-            commands.append('{"audio":{"out":{"eq3":{"boost":null}}}}')
-            commands.append('{"audio":{"out":{"eq3":{"desc":null}}}}')
+            commands += [
+                '{"device":{"name":null}}',
+                '{"device":{"identity":{"vendor":null}}}',
+                '{"device":{"identity":{"product":null}}}',
+                '{"device":{"identity":{"serial":null}}}',
+                '{"device":{"identity":{"version":null}}}',
+                '{"device":{"standby":{"enabled":null}}}',
+                '{"device":{"standby":{"auto_standby_time":null}}}',
+                '{"device":{"standby":{"level":null}}}',
+                '{"device":{"standby":{"countdown":null}}}',
+                '{"audio":{"in":{"interface":null}}}',
+                '{"audio":{"in1":{"label":null}}}',
+                '{"audio":{"in2":{"label":null}}}',
+                '{"audio":{"out":{"level":null}}}',
+                '{"audio":{"out":{"mute":null}}}',
+                '{"audio":{"out":{"delay":null}}}',
+                '{"audio":{"out":{"solo":null}}}',
+                '{"audio":{"out":{"phaseinversion":null}}}',
+                '{"audio":{"out":{"mixer":{"levels":null}}}}',
+                '{"audio":{"out":{"mixer":{"inputs":null}}}}',
+                '{"audio":{"out":{"eq2":{"enabled":null}}}}',
+                '{"audio":{"out":{"eq2":{"type":null}}}}',
+                '{"audio":{"out":{"eq2":{"frequency":null}}}}',
+                '{"audio":{"out":{"eq2":{"q":null}}}}',
+                '{"audio":{"out":{"eq2":{"gain":null}}}}',
+                '{"audio":{"out":{"eq2":{"boost":null}}}}',
+                '{"audio":{"out":{"eq2":{"desc":null}}}}',
+                '{"audio":{"out":{"eq3":{"enabled":null}}}}',
+                '{"audio":{"out":{"eq3":{"type":null}}}}',
+                '{"audio":{"out":{"eq3":{"frequency":null}}}}',
+                '{"audio":{"out":{"eq3":{"q":null}}}}',
+                '{"audio":{"out":{"eq3":{"gain":null}}}}',
+                '{"audio":{"out":{"eq3":{"boost":null}}}}',
+                '{"audio":{"out":{"eq3":{"desc":null}}}}',
+            ]
 
             return commands
 
     if product == "KH 750" and kh750fwnew == 1:
-        commands.append('{"device":{"name":null}}')
-        commands.append('{"device":{"identity":{"vendor":null}}}')
-        commands.append('{"device":{"identity":{"product":null}}}')
-        commands.append('{"device":{"identity":{"serial":null}}}')
-        commands.append('{"device":{"identity":{"version":null}}}')
-        commands.append('{"device":{"standby":{"enabled":null}}}')
-        commands.append('{"device":{"standby":{"auto_standby_time":null}}}')
-        commands.append('{"device":{"standby":{"level":null}}}')
-        commands.append('{"device":{"standby":{"countdown":null}}}')
-
-        commands.append('{"audio":{"in":{"delay":null}}}')
-        commands.append('{"audio":{"in":{"interface":null}}}')
-        commands.append('{"audio":{"in1":{"label":null}}}')
-        commands.append('{"audio":{"in2":{"label":null}}}')
+        commands += [
+            '{"device":{"name":null}}',
+            '{"device":{"identity":{"vendor":null}}}',
+            '{"device":{"identity":{"product":null}}}',
+            '{"device":{"identity":{"serial":null}}}',
+            '{"device":{"identity":{"version":null}}}',
+            '{"device":{"standby":{"enabled":null}}}',
+            '{"device":{"standby":{"auto_standby_time":null}}}',
+            '{"device":{"standby":{"level":null}}}',
+            '{"device":{"standby":{"countdown":null}}}',
+            '{"audio":{"in":{"delay":null}}}',
+            '{"audio":{"in":{"interface":null}}}',
+            '{"audio":{"in1":{"label":null}}}',
+            '{"audio":{"in2":{"label":null}}}',
+        ]
 
         for x in range(1, 6):
             if x != 5:
-                commands.append('{"audio":{"out' + str(x) + '":{"loudspeaker":null}}}')
-                commands.append('{"audio":{"out' + str(x) + '":{"label":null}}}')
+                commands += [
+                    '{"audio":{"out' + str(x) + '":{"loudspeaker":null}}}',
+                    '{"audio":{"out' + str(x) + '":{"label":null}}}',
+                ]
 
-            commands.append('{"audio":{"out' + str(x) + '":{"desc":null}}}')
-            commands.append('{"audio":{"out' + str(x) + '":{"delay":null}}}')
-            commands.append('{"audio":{"out' + str(x) + '":{"level":null}}}')
-            commands.append('{"audio":{"out' + str(x) + '":{"mute":null}}}')
-            commands.append('{"audio":{"out' + str(x) + '":{"mixer":{"levels":null}}}}')
-            commands.append('{"audio":{"out' + str(x) + '":{"mixer":{"inputs":null}}}}')
-
-            commands.append('{"audio":{"out' + str(x) + '":{"eq1":{"desc":null}}}}')
+            commands += [
+                '{"audio":{"out' + str(x) + '":{"desc":null}}}',
+                '{"audio":{"out' + str(x) + '":{"delay":null}}}',
+                '{"audio":{"out' + str(x) + '":{"level":null}}}',
+                '{"audio":{"out' + str(x) + '":{"mute":null}}}',
+                '{"audio":{"out' + str(x) + '":{"mixer":{"levels":null}}}}',
+                '{"audio":{"out' + str(x) + '":{"mixer":{"inputs":null}}}}',
+                '{"audio":{"out' + str(x) + '":{"eq1":{"desc":null}}}}',
+            ]
 
             for z in range(1, 3):
-                commands.append(
-                    '{"audio":{"out'
-                    + str(x)
-                    + '":{"eq1":{"in'
-                    + str(z)
-                    + '":{"enabled":null}}}}}'
-                )
-                commands.append(
-                    '{"audio":{"out'
-                    + str(x)
-                    + '":{"eq1":{"in'
-                    + str(z)
-                    + '":{"q":null}}}}}'
-                )
-                commands.append(
-                    '{"audio":{"out'
-                    + str(x)
-                    + '":{"eq1":{"in'
-                    + str(z)
-                    + '":{"frequency":null}}}}}'
-                )
-                commands.append(
-                    '{"audio":{"out'
-                    + str(x)
-                    + '":{"eq1":{"in'
-                    + str(z)
-                    + '":{"gain":null}}}}}'
-                )
-                commands.append(
-                    '{"audio":{"out'
-                    + str(x)
-                    + '":{"eq1":{"in'
-                    + str(z)
-                    + '":{"type":null}}}}}'
-                )
-                commands.append(
-                    '{"audio":{"out'
-                    + str(x)
-                    + '":{"eq1":{"in'
-                    + str(z)
-                    + '":{"input":null}}}}}'
-                )
+                commands += [
+                    '{"audio":{"out' + str(x) + '":{"eq1":{"in' + str(z) + '":{"enabled":null}}}}}',
+                    '{"audio":{"out' + str(x) + '":{"eq1":{"in' + str(z) + '":{"q":null}}}}}',
+                    '{"audio":{"out' + str(x) + '":{"eq1":{"in' + str(z) + '":{"frequency":null}}}}}',
+                    '{"audio":{"out' + str(x) + '":{"eq1":{"in' + str(z) + '":{"gain":null}}}}}',
+                    '{"audio":{"out' + str(x) + '":{"eq1":{"in' + str(z) + '":{"type":null}}}}}',
+                    '{"audio":{"out' + str(x) + '":{"eq1":{"in' + str(z) + '":{"input":null}}}}}',
+                ]
 
-            commands.append('{"audio":{"out' + str(x) + '":{"eq2":{"enabled":null}}}}')
-            commands.append('{"audio":{"out' + str(x) + '":{"eq2":{"type":null}}}}')
-            commands.append(
-                '{"audio":{"out' + str(x) + '":{"eq2":{"frequency":null}}}}'
-            )
-            commands.append('{"audio":{"out' + str(x) + '":{"eq2":{"q":null}}}}')
-            commands.append('{"audio":{"out' + str(x) + '":{"eq2":{"gain":null}}}}')
-            commands.append('{"audio":{"out' + str(x) + '":{"eq2":{"boost":null}}}}')
-            commands.append('{"audio":{"out' + str(x) + '":{"eq2":{"desc":null}}}}')
-
-            commands.append('{"audio":{"out' + str(x) + '":{"eq3":{"enabled":null}}}}')
-            commands.append('{"audio":{"out' + str(x) + '":{"eq3":{"type":null}}}}')
-            commands.append(
-                '{"audio":{"out' + str(x) + '":{"eq3":{"frequency":null}}}}'
-            )
-            commands.append('{"audio":{"out' + str(x) + '":{"eq3":{"q":null}}}}')
-            commands.append('{"audio":{"out' + str(x) + '":{"eq3":{"gain":null}}}}')
-            commands.append('{"audio":{"out' + str(x) + '":{"eq3":{"boost":null}}}}')
-            commands.append('{"audio":{"out' + str(x) + '":{"eq3":{"desc":null}}}}')
+            commands += [
+                '{"audio":{"out' + str(x) + '":{"eq2":{"enabled":null}}}}',
+                '{"audio":{"out' + str(x) + '":{"eq2":{"type":null}}}}',
+                '{"audio":{"out' + str(x) + '":{"eq2":{"frequency":null}}}}',
+                '{"audio":{"out' + str(x) + '":{"eq2":{"q":null}}}}',
+                '{"audio":{"out' + str(x) + '":{"eq2":{"gain":null}}}}',
+                '{"audio":{"out' + str(x) + '":{"eq2":{"boost":null}}}}',
+                '{"audio":{"out' + str(x) + '":{"eq2":{"desc":null}}}}',
+                '{"audio":{"out' + str(x) + '":{"eq3":{"enabled":null}}}}',
+                '{"audio":{"out' + str(x) + '":{"eq3":{"type":null}}}}',
+                '{"audio":{"out' + str(x) + '":{"eq3":{"frequency":null}}}}',
+                '{"audio":{"out' + str(x) + '":{"eq3":{"q":null}}}}',
+                '{"audio":{"out' + str(x) + '":{"eq3":{"gain":null}}}}',
+                '{"audio":{"out' + str(x) + '":{"eq3":{"boost":null}}}}',
+                '{"audio":{"out' + str(x) + '":{"eq3":{"desc":null}}}}',
+            ]
 
         return commands
 
-    commands.append('{"device":{"name":null}}')
-    commands.append('{"device":{"identity":{"vendor":null}}}')
-    commands.append('{"device":{"identity":{"product":null}}}')
-    commands.append('{"device":{"identity":{"serial":null}}}')
-    commands.append('{"device":{"identity":{"version":null}}}')
-    commands.append('{"device":{"standby":{"enabled":null}}}')
-    commands.append('{"device":{"standby":{"auto_standby_time":null}}}')
-    commands.append('{"device":{"standby":{"level":null}}}')
+    commands += [
+        '{"device":{"name":null}}',
+        '{"device":{"identity":{"vendor":null}}}',
+        '{"device":{"identity":{"product":null}}}',
+        '{"device":{"identity":{"serial":null}}}',
+        '{"device":{"identity":{"version":null}}}',
+        '{"device":{"standby":{"enabled":null}}}',
+        '{"device":{"standby":{"auto_standby_time":null}}}',
+        '{"device":{"standby":{"level":null}}}',
+    ]
 
     if is_speaker(product):
-        commands.append('{"ui":{"logo":{"brightness":null}}}')
-        commands.append('{"audio":{"in":{"gain":null}}}')
-        commands.append('{"audio":{"in":{"phase_invert":null}}}')
+        commands += [
+            '{"ui":{"logo":{"brightness":null}}}',
+            '{"audio":{"in":{"gain":null}}}',
+            '{"audio":{"in":{"phase_invert":null}}}',
+        ]
 
-    commands.append('{"audio":{"out":{"level":null}}}')
-    commands.append('{"audio":{"out":{"dimm":null}}}')
-    commands.append('{"audio":{"out":{"mute":null}}}')
+    commands += [
+        '{"audio":{"out":{"level":null}}}',
+        '{"audio":{"out":{"dimm":null}}}',
+        '{"audio":{"out":{"mute":null}}}',
+    ]
 
     if is_speaker(product):
-        commands.append('{"audio":{"out":{"delay":null}}}')
-        commands.append('{"audio":{"out":{"solo":null}}}')
-        commands.append('{"audio":{"out":{"phase_correction":null}}}')
-        commands.append('{"audio":{"out":{"limiter_mode":null}}}')
-        commands.append('{"audio":{"out":{"equalizer":{"enabled":null}}}}')
-        commands.append('{"audio":{"out":{"equalizer":{"type":null}}}}')
-        commands.append('{"audio":{"out":{"equalizer":{"frequency":null}}}}')
-        commands.append('{"audio":{"out":{"equalizer":{"q":null}}}}')
-        commands.append('{"audio":{"out":{"equalizer":{"gain":null}}}}')
-        commands.append('{"audio":{"out":{"equalizer":{"boost":null}}}}')
+        commands += [
+            '{"audio":{"out":{"delay":null}}}',
+            '{"audio":{"out":{"solo":null}}}',
+            '{"audio":{"out":{"phase_correction":null}}}',
+            '{"audio":{"out":{"limiter_mode":null}}}',
+            '{"audio":{"out":{"equalizer":{"enabled":null}}}}',
+            '{"audio":{"out":{"equalizer":{"type":null}}}}',
+            '{"audio":{"out":{"equalizer":{"frequency":null}}}}',
+            '{"audio":{"out":{"equalizer":{"q":null}}}}',
+            '{"audio":{"out":{"equalizer":{"gain":null}}}}',
+            '{"audio":{"out":{"equalizer":{"boost":null}}}}',
+        ]
 
     if product == "KH 750":
-        commands.append('{"audio":{"in":{"analog":null}}}')
-        commands.append('{"audio":{"in":{"delay":null}}}')
-        commands.append('{"audio":{"in":{"interface":null}}}')
-        commands.append('{"audio":{"in1":{"label":null}}}')
-        commands.append('{"audio":{"in2":{"label":null}}}')
+        commands += [
+            '{"audio":{"in":{"analog":null}}}',
+            '{"audio":{"in":{"delay":null}}}',
+            '{"audio":{"in":{"interface":null}}}',
+            '{"audio":{"in1":{"label":null}}}',
+            '{"audio":{"in2":{"label":null}}}',
+        ]
 
         for x in range(1, 6):
             if x != 5:
-                commands.append('{"audio":{"out' + str(x) + '":{"loudspeaker":null}}}')
-                commands.append('{"audio":{"out' + str(x) + '":{"on":null}}}')
-                commands.append('{"audio":{"out' + str(x) + '":{"label":null}}}')
-            commands.append('{"audio":{"out' + str(x) + '":{"gain":null}}}')
-            commands.append('{"audio":{"out' + str(x) + '":{"desc":null}}}')
-            commands.append('{"audio":{"out' + str(x) + '":{"delay":null}}}')
-            commands.append('{"audio":{"out' + str(x) + '":{"control":null}}}')
-
-            commands.append('{"audio":{"out' + str(x) + '":{"mixer":{"levels":null}}}}')
-
-            commands.append('{"audio":{"out' + str(x) + '":{"eq1":{"desc":null}}}}')
+                commands += [
+                    '{"audio":{"out' + str(x) + '":{"loudspeaker":null}}}',
+                    '{"audio":{"out' + str(x) + '":{"on":null}}}',
+                    '{"audio":{"out' + str(x) + '":{"label":null}}}',
+                ]
+            commands += [
+                '{"audio":{"out' + str(x) + '":{"gain":null}}}',
+                '{"audio":{"out' + str(x) + '":{"desc":null}}}',
+                '{"audio":{"out' + str(x) + '":{"delay":null}}}',
+                '{"audio":{"out' + str(x) + '":{"control":null}}}',
+                '{"audio":{"out' + str(x) + '":{"mixer":{"levels":null}}}}',
+                '{"audio":{"out' + str(x) + '":{"eq1":{"desc":null}}}}',
+            ]
 
             for z in range(1, 3):
-                commands.append(
-                    '{"audio":{"out'
-                    + str(x)
-                    + '":{"eq1":{"in'
-                    + str(z)
-                    + '":{"enabled":null}}}}}'
-                )
-                commands.append(
-                    '{"audio":{"out'
-                    + str(x)
-                    + '":{"eq1":{"in'
-                    + str(z)
-                    + '":{"q":null}}}}}'
-                )
-                commands.append(
-                    '{"audio":{"out'
-                    + str(x)
-                    + '":{"eq1":{"in'
-                    + str(z)
-                    + '":{"frequency":null}}}}}'
-                )
-                commands.append(
-                    '{"audio":{"out'
-                    + str(x)
-                    + '":{"eq1":{"in'
-                    + str(z)
-                    + '":{"gain":null}}}}}'
-                )
-                commands.append(
-                    '{"audio":{"out'
-                    + str(x)
-                    + '":{"eq1":{"in'
-                    + str(z)
-                    + '":{"type":null}}}}}'
-                )
+                commands += [
+                    '{"audio":{"out' + str(x) + '":{"eq1":{"in' + str(z) + '":{"enabled":null}}}}}',
+                    '{"audio":{"out' + str(x) + '":{"eq1":{"in' + str(z) + '":{"q":null}}}}}',
+                    '{"audio":{"out' + str(x) + '":{"eq1":{"in' + str(z) + '":{"frequency":null}}}}}',
+                    '{"audio":{"out' + str(x) + '":{"eq1":{"in' + str(z) + '":{"gain":null}}}}}',
+                    '{"audio":{"out' + str(x) + '":{"eq1":{"in' + str(z) + '":{"type":null}}}}}',
+                ]
 
-            commands.append('{"audio":{"out' + str(x) + '":{"eq2":{"enabled":null}}}}')
-            commands.append('{"audio":{"out' + str(x) + '":{"eq2":{"type":null}}}}')
-            commands.append(
-                '{"audio":{"out' + str(x) + '":{"eq2":{"frequency":null}}}}'
-            )
-            commands.append('{"audio":{"out' + str(x) + '":{"eq2":{"q":null}}}}')
-            commands.append('{"audio":{"out' + str(x) + '":{"eq2":{"gain":null}}}}')
-            commands.append('{"audio":{"out' + str(x) + '":{"eq2":{"boost":null}}}}')
-            commands.append('{"audio":{"out' + str(x) + '":{"eq2":{"desc":null}}}}')
-
-            commands.append('{"audio":{"out' + str(x) + '":{"eq3":{"enabled":null}}}}')
-            commands.append('{"audio":{"out' + str(x) + '":{"eq3":{"type":null}}}}')
-            commands.append(
-                '{"audio":{"out' + str(x) + '":{"eq3":{"frequency":null}}}}'
-            )
-            commands.append('{"audio":{"out' + str(x) + '":{"eq3":{"q":null}}}}')
-            commands.append('{"audio":{"out' + str(x) + '":{"eq3":{"gain":null}}}}')
-            commands.append('{"audio":{"out' + str(x) + '":{"eq3":{"boost":null}}}}')
-            commands.append('{"audio":{"out' + str(x) + '":{"eq3":{"desc":null}}}}')
+            commands += [
+                '{"audio":{"out' + str(x) + '":{"eq2":{"enabled":null}}}}',
+                '{"audio":{"out' + str(x) + '":{"eq2":{"type":null}}}}',
+                '{"audio":{"out' + str(x) + '":{"eq2":{"frequency":null}}}}',
+                '{"audio":{"out' + str(x) + '":{"eq2":{"q":null}}}}',
+                '{"audio":{"out' + str(x) + '":{"eq2":{"gain":null}}}}',
+                '{"audio":{"out' + str(x) + '":{"eq2":{"boost":null}}}}',
+                '{"audio":{"out' + str(x) + '":{"eq2":{"desc":null}}}}',
+                '{"audio":{"out' + str(x) + '":{"eq3":{"enabled":null}}}}',
+                '{"audio":{"out' + str(x) + '":{"eq3":{"type":null}}}}',
+                '{"audio":{"out' + str(x) + '":{"eq3":{"frequency":null}}}}',
+                '{"audio":{"out' + str(x) + '":{"eq3":{"q":null}}}}',
+                '{"audio":{"out' + str(x) + '":{"eq3":{"gain":null}}}}',
+                '{"audio":{"out' + str(x) + '":{"eq3":{"boost":null}}}}',
+                '{"audio":{"out' + str(x) + '":{"eq3":{"desc":null}}}}',
+            ]
 
     return commands
 
