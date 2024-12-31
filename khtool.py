@@ -106,6 +106,7 @@ def query_commands(device):
                 '{"device":{"standby":{"auto_standby_time":null}}}',
                 '{"device":{"standby":{"level":null}}}',
                 '{"device":{"standby":{"countdown":null}}}',
+                '{"ui":{"logo":{"brightness":null}}}',
                 '{"audio":{"in":{"interface":null}}}',
                 '{"audio":{"in1":{"label":null}}}',
                 '{"audio":{"in2":{"label":null}}}',
