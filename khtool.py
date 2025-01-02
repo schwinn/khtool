@@ -64,8 +64,28 @@ def restore_device(device, db):
         print("Version does not match.")
         exit(1)
 
-    for i in db["commands"]:
-        send_print(device, i)
+    cd = _command_dict(device)
+    for d in _flatten_dict(db["commands"]):
+        # First, get the osc/limits dictionary for the command on this device.
+        limits = cd
+        tmp = d
+        while isinstance(tmp, dict):
+            # Get the first key
+            for k in tmp:
+                break
+            tmp = tmp[k]
+            limits = limits[k]
+        limits = limits[0]
+        # Some conditions for limits replies that mean that a value is not writeable.
+        # This doesn't catch everything, but it's better than nothing. For some
+        # parameters, the limits values just don't make much sense.
+        read_only_conditions = [
+            "const" in limits and limits["const"],
+            "writeable" in limits and not limits["writeable"],
+        ]
+        if any(read_only_conditions):
+            continue
+        send_print(device, json.dumps(d))
 
 
 def is_speaker(product):
@@ -271,22 +291,18 @@ def _flatten_dict(dict_):
 
 
 def backup_device(device, db):
-
     if hasattr(device, "connected"):
         if not device.connected:
             print("device " + str(device.ip) + " is not online")
             exit(1)
 
-    product = get_product(device)
+    commands = _command_dict(device)
+    _query_by_dict(device, commands)
 
-    commands = []
-    for c in query_commands(device):
-        send_add_array(device, c, commands)
-
-    db[device.ip] = {"commands": []}
+    db[device.ip] = {"commands": {}}
     db[device.ip]["commands"] = commands
     db[device.ip]["serial"] = get_serial(device)
-    db[device.ip]["product"] = product
+    db[device.ip]["product"] = get_product(device)
     db[device.ip]["vendor"] = get_vendor(device)
     db[device.ip]["version"] = get_version(device)
 
