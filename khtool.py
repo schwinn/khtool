@@ -76,218 +76,198 @@ def is_speaker(product):
     return False
 
 
-def query_commands(device):
-    commands = []
-    product = get_product(device)
+def _path_to_json_query(path):
+    """Converts path lists to json to be used for requests.
 
-    if product == "KH 750":
-        version = get_version(device)
-        pattern = "^1_0|^1_1"
-        result = re.match(pattern, version)
-        if result:
-            kh750fwnew = 0
-        else:
-            kh750fwnew = 1
+    For example:
+
+    ["a", "b"] => {"a":{"b":null}}
+
+    """
+    result = "null"
+    for s in path[::-1]:
+        result = '{"' + s + '":' + result + "}"
+    return result
+
+
+def _get_available_subcommands(device, path):
+    """Use an osc/schema request to obtain all possible DIRECT subcommands below path.
+
+    The result is a dictionary. Its keys are the subcommands and its values are either
+    an empty dict or None, indicating a sublist of commands or a queriable value,
+    respectively.
+    """
+    json_path = _path_to_json_query(path)
+    if path:
+        json_path = "[" + json_path + "]"
+    request = '{"osc":{"schema":' + json_path + "}}"
+    response = send_command(device, request)
+    result = json.loads(response)["osc"]["schema"][0]
+    # Strip the "prefix" of the returned dictionary.
+    for s in path:
+        result = result[s]
+    return result
+
+
+def _get_command_subtree(device, path):
+    """Recursive helper function to get the whole subtree of commands below a path.
+
+    If `path` corresponds to a queriable value, this function will return a
+    single-element list containing the dictionary returned by the osc/limits request for
+    `path`.
+
+    This function can be applied to the root path [] to get all available commands.
+    """
+    result = _get_available_subcommands(device, path)
+    if result is None:
+        request = '{"osc":{"limits":[' + _path_to_json_query(path) + "]}}"
+        response = send_command(device, request)
+        limits = json.loads(response)["osc"]["limits"][0]
+        for s in path:
+            limits = limits[s]
+        return limits
+    for k in result.keys():
+        result[k] = _get_command_subtree(device, path + [k])
+    return result
+
+
+def _command_dict(device):
+    """Return all available commands for a device in a nested dictionary.
+
+    The dictionary has the following format:
+
+    - All keys are strings.
+    - Each key either leads to another dict or to a list.
+    - If a path of keys leads to a list, this path is a valid SSC parameter. The list
+      will contain a single element: The dictionary returned by the osc/limits query for
+      that parameter.
+    """
+    if not os.path.exists("khtool_commands.json"):
+        file_dict = {}
     else:
-        kh750fwnew = -1
+        with open("khtool_commands.json", "r", encoding="ascii") as infile:
+            file_dict = json.load(infile)
+            if device.ip in file_dict:
+                print(
+                    f"Reading available commands for device '{device.name}' from "
+                    f"khtool_commands.json..."
+                )
+                return file_dict[device.ip]
 
-    if product == "KH 150" or product == "KH 120 II":
-        version = get_version(device)
-        pattern = "^1_0"
-        result = re.match(pattern, version)
-        if not result:
-            commands += [
-                '{"device":{"name":null}}',
-                '{"device":{"identity":{"vendor":null}}}',
-                '{"device":{"identity":{"product":null}}}',
-                '{"device":{"identity":{"serial":null}}}',
-                '{"device":{"identity":{"version":null}}}',
-                '{"device":{"standby":{"enabled":null}}}',
-                '{"device":{"standby":{"auto_standby_time":null}}}',
-                '{"device":{"standby":{"level":null}}}',
-                '{"device":{"standby":{"countdown":null}}}',
-                '{"ui":{"logo":{"brightness":null}}}',
-                '{"audio":{"in":{"interface":null}}}',
-                '{"audio":{"in1":{"label":null}}}',
-                '{"audio":{"in2":{"label":null}}}',
-                '{"audio":{"out":{"level":null}}}',
-                '{"audio":{"out":{"mute":null}}}',
-                '{"audio":{"out":{"delay":null}}}',
-                '{"audio":{"out":{"solo":null}}}',
-                '{"audio":{"out":{"phaseinversion":null}}}',
-                '{"audio":{"out":{"mixer":{"levels":null}}}}',
-                '{"audio":{"out":{"mixer":{"inputs":null}}}}',
-                '{"audio":{"out":{"eq2":{"enabled":null}}}}',
-                '{"audio":{"out":{"eq2":{"type":null}}}}',
-                '{"audio":{"out":{"eq2":{"frequency":null}}}}',
-                '{"audio":{"out":{"eq2":{"q":null}}}}',
-                '{"audio":{"out":{"eq2":{"gain":null}}}}',
-                '{"audio":{"out":{"eq2":{"boost":null}}}}',
-                '{"audio":{"out":{"eq2":{"desc":null}}}}',
-                '{"audio":{"out":{"eq3":{"enabled":null}}}}',
-                '{"audio":{"out":{"eq3":{"type":null}}}}',
-                '{"audio":{"out":{"eq3":{"frequency":null}}}}',
-                '{"audio":{"out":{"eq3":{"q":null}}}}',
-                '{"audio":{"out":{"eq3":{"gain":null}}}}',
-                '{"audio":{"out":{"eq3":{"boost":null}}}}',
-                '{"audio":{"out":{"eq3":{"desc":null}}}}',
-            ]
+    print(
+        f"No available command list for device '{device.name}' found in "
+        f"khtool_commands.json. Querying..."
+    )
+    commands_for_device = _get_command_subtree(device, [])
+    # These keys should exist for all devices supporting SSC. We delete them from the
+    # dictionary because it does not make sense to query these with "null" for our
+    # purposes.
+    del commands_for_device["osc"]["schema"]
+    del commands_for_device["osc"]["limits"]
+    file_dict[device.ip] = commands_for_device
+    with open("khtool_commands.json", "w", encoding="ascii") as outfile:
+        json.dump(file_dict, outfile, indent=4, sort_keys=True)
+    print(
+        f"Wrote available commands for device '{device.name}' to khtool_commands.json."
+    )
+    return commands_for_device
 
-            return commands
 
-    if product == "KH 750" and kh750fwnew == 1:
-        commands += [
-            '{"device":{"name":null}}',
-            '{"device":{"identity":{"vendor":null}}}',
-            '{"device":{"identity":{"product":null}}}',
-            '{"device":{"identity":{"serial":null}}}',
-            '{"device":{"identity":{"version":null}}}',
-            '{"device":{"standby":{"enabled":null}}}',
-            '{"device":{"standby":{"auto_standby_time":null}}}',
-            '{"device":{"standby":{"level":null}}}',
-            '{"device":{"standby":{"countdown":null}}}',
-            '{"audio":{"in":{"delay":null}}}',
-            '{"audio":{"in":{"interface":null}}}',
-            '{"audio":{"in1":{"label":null}}}',
-            '{"audio":{"in2":{"label":null}}}',
-        ]
+def _for_each_path_in_dict(dict_, f):
+    """Execute an action f for each path in a dictionary. Collect results in returned
+    list.
 
-        for x in range(1, 6):
-            if x != 5:
-                commands += [
-                    '{"audio":{"out' + str(x) + '":{"loudspeaker":null}}}',
-                    '{"audio":{"out' + str(x) + '":{"label":null}}}',
-                ]
+    f is called on:
+        - dict_
+        - the path to a non-dict value as a list of keys,
+        - the subdictionary containing the non-dict value which `path` leads to.
 
-            commands += [
-                '{"audio":{"out' + str(x) + '":{"desc":null}}}',
-                '{"audio":{"out' + str(x) + '":{"delay":null}}}',
-                '{"audio":{"out' + str(x) + '":{"level":null}}}',
-                '{"audio":{"out' + str(x) + '":{"mute":null}}}',
-                '{"audio":{"out' + str(x) + '":{"mixer":{"levels":null}}}}',
-                '{"audio":{"out' + str(x) + '":{"mixer":{"inputs":null}}}}',
-                '{"audio":{"out' + str(x) + '":{"eq1":{"desc":null}}}}',
-            ]
+    For example:
 
-            for z in range(1, 3):
-                commands += [
-                    '{"audio":{"out' + str(x) + '":{"eq1":{"in' + str(z) + '":{"enabled":null}}}}}',
-                    '{"audio":{"out' + str(x) + '":{"eq1":{"in' + str(z) + '":{"q":null}}}}}',
-                    '{"audio":{"out' + str(x) + '":{"eq1":{"in' + str(z) + '":{"frequency":null}}}}}',
-                    '{"audio":{"out' + str(x) + '":{"eq1":{"in' + str(z) + '":{"gain":null}}}}}',
-                    '{"audio":{"out' + str(x) + '":{"eq1":{"in' + str(z) + '":{"type":null}}}}}',
-                    '{"audio":{"out' + str(x) + '":{"eq1":{"in' + str(z) + '":{"input":null}}}}}',
-                ]
-
-            commands += [
-                '{"audio":{"out' + str(x) + '":{"eq2":{"enabled":null}}}}',
-                '{"audio":{"out' + str(x) + '":{"eq2":{"type":null}}}}',
-                '{"audio":{"out' + str(x) + '":{"eq2":{"frequency":null}}}}',
-                '{"audio":{"out' + str(x) + '":{"eq2":{"q":null}}}}',
-                '{"audio":{"out' + str(x) + '":{"eq2":{"gain":null}}}}',
-                '{"audio":{"out' + str(x) + '":{"eq2":{"boost":null}}}}',
-                '{"audio":{"out' + str(x) + '":{"eq2":{"desc":null}}}}',
-                '{"audio":{"out' + str(x) + '":{"eq3":{"enabled":null}}}}',
-                '{"audio":{"out' + str(x) + '":{"eq3":{"type":null}}}}',
-                '{"audio":{"out' + str(x) + '":{"eq3":{"frequency":null}}}}',
-                '{"audio":{"out' + str(x) + '":{"eq3":{"q":null}}}}',
-                '{"audio":{"out' + str(x) + '":{"eq3":{"gain":null}}}}',
-                '{"audio":{"out' + str(x) + '":{"eq3":{"boost":null}}}}',
-                '{"audio":{"out' + str(x) + '":{"eq3":{"desc":null}}}}',
-            ]
-
-        return commands
-
-    commands += [
-        '{"device":{"name":null}}',
-        '{"device":{"identity":{"vendor":null}}}',
-        '{"device":{"identity":{"product":null}}}',
-        '{"device":{"identity":{"serial":null}}}',
-        '{"device":{"identity":{"version":null}}}',
-        '{"device":{"standby":{"enabled":null}}}',
-        '{"device":{"standby":{"auto_standby_time":null}}}',
-        '{"device":{"standby":{"level":null}}}',
+    subdict = {"b": True, "c": 3}
+    {"a": subdict} => [
+        f(dict_, subdict, ["a", "b"]),
+        f(dict_, subdict, ["a", "c"])
     ]
 
-    if is_speaker(product):
-        commands += [
-            '{"ui":{"logo":{"brightness":null}}}',
-            '{"audio":{"in":{"gain":null}}}',
-            '{"audio":{"in":{"phase_invert":null}}}',
-        ]
+    """
+    # This is some version of depth-first search. Might not be the most efficient
+    # implementation.
+    result = []
+    dict_with_root = {"root": dict_}
+    path = ["root"]
+    visited = []
+    while path:
+        subtree = dict_with_root
+        for s in path:
+            subtree = subtree[s]
+        for k in subtree.keys():
+            pathstring = "".join(path) + k
+            if pathstring in visited:
+                continue
+            visited.append(pathstring)
+            # If there is another sub-dictionary, go deeper.
+            if isinstance(subtree[k], dict):
+                path.append(k)
+                break
+            # We encountered A non-dict value. Execute the action.
+            result.append(f(dict_, subtree, path[1:] + [k]))
+        # This triggers if the loop ran through without break being encountered, i.e. if
+        # all values in the current subdict were either already visited or "None".
+        else:
+            path.pop()
 
-    commands += [
-        '{"audio":{"out":{"level":null}}}',
-        '{"audio":{"out":{"dimm":null}}}',
-        '{"audio":{"out":{"mute":null}}}',
+    return result
+
+
+def _query_by_dict(device, dict_):
+    """Populate a command dictionary with values and return all json response strings.
+
+    For example:
+
+    {"a": {"b": None, "c": None}} => [
+        send_command(device, '{"a":{"b":null}}')
+        send_command(device, '{"a":{"c":null}}')
     ]
 
-    if is_speaker(product):
-        commands += [
-            '{"audio":{"out":{"delay":null}}}',
-            '{"audio":{"out":{"solo":null}}}',
-            '{"audio":{"out":{"phase_correction":null}}}',
-            '{"audio":{"out":{"limiter_mode":null}}}',
-            '{"audio":{"out":{"equalizer":{"enabled":null}}}}',
-            '{"audio":{"out":{"equalizer":{"type":null}}}}',
-            '{"audio":{"out":{"equalizer":{"frequency":null}}}}',
-            '{"audio":{"out":{"equalizer":{"q":null}}}}',
-            '{"audio":{"out":{"equalizer":{"gain":null}}}}',
-            '{"audio":{"out":{"equalizer":{"boost":null}}}}',
-        ]
+    Note: It's possible in principle to send the whole _command_dict converted to json
+    as a request, but it produces "413 - request too long" errors on some devices.
+    """
 
-    if product == "KH 750":
-        commands += [
-            '{"audio":{"in":{"analog":null}}}',
-            '{"audio":{"in":{"delay":null}}}',
-            '{"audio":{"in":{"interface":null}}}',
-            '{"audio":{"in1":{"label":null}}}',
-            '{"audio":{"in2":{"label":null}}}',
-        ]
+    def f(_, subtree, path):
+        command = _path_to_json_query(path)
+        command_output = send_command(device, command)
+        out_val = json.loads(command_output)
+        # This would be nicer but doesn't work because of osc/limits.
+        # for s in path[1:] + [k]:
+        #     out_val = out_val[s]
+        while isinstance(out_val, dict):
+            out_val = out_val.popitem()[-1]
+        subtree[path[-1]] = out_val
+        return command_output
 
-        for x in range(1, 6):
-            if x != 5:
-                commands += [
-                    '{"audio":{"out' + str(x) + '":{"loudspeaker":null}}}',
-                    '{"audio":{"out' + str(x) + '":{"on":null}}}',
-                    '{"audio":{"out' + str(x) + '":{"label":null}}}',
-                ]
-            commands += [
-                '{"audio":{"out' + str(x) + '":{"gain":null}}}',
-                '{"audio":{"out' + str(x) + '":{"desc":null}}}',
-                '{"audio":{"out' + str(x) + '":{"delay":null}}}',
-                '{"audio":{"out' + str(x) + '":{"control":null}}}',
-                '{"audio":{"out' + str(x) + '":{"mixer":{"levels":null}}}}',
-                '{"audio":{"out' + str(x) + '":{"eq1":{"desc":null}}}}',
-            ]
+    return _for_each_path_in_dict(dict_, f)
 
-            for z in range(1, 3):
-                commands += [
-                    '{"audio":{"out' + str(x) + '":{"eq1":{"in' + str(z) + '":{"enabled":null}}}}}',
-                    '{"audio":{"out' + str(x) + '":{"eq1":{"in' + str(z) + '":{"q":null}}}}}',
-                    '{"audio":{"out' + str(x) + '":{"eq1":{"in' + str(z) + '":{"frequency":null}}}}}',
-                    '{"audio":{"out' + str(x) + '":{"eq1":{"in' + str(z) + '":{"gain":null}}}}}',
-                    '{"audio":{"out' + str(x) + '":{"eq1":{"in' + str(z) + '":{"type":null}}}}}',
-                ]
 
-            commands += [
-                '{"audio":{"out' + str(x) + '":{"eq2":{"enabled":null}}}}',
-                '{"audio":{"out' + str(x) + '":{"eq2":{"type":null}}}}',
-                '{"audio":{"out' + str(x) + '":{"eq2":{"frequency":null}}}}',
-                '{"audio":{"out' + str(x) + '":{"eq2":{"q":null}}}}',
-                '{"audio":{"out' + str(x) + '":{"eq2":{"gain":null}}}}',
-                '{"audio":{"out' + str(x) + '":{"eq2":{"boost":null}}}}',
-                '{"audio":{"out' + str(x) + '":{"eq2":{"desc":null}}}}',
-                '{"audio":{"out' + str(x) + '":{"eq3":{"enabled":null}}}}',
-                '{"audio":{"out' + str(x) + '":{"eq3":{"type":null}}}}',
-                '{"audio":{"out' + str(x) + '":{"eq3":{"frequency":null}}}}',
-                '{"audio":{"out' + str(x) + '":{"eq3":{"q":null}}}}',
-                '{"audio":{"out' + str(x) + '":{"eq3":{"gain":null}}}}',
-                '{"audio":{"out' + str(x) + '":{"eq3":{"boost":null}}}}',
-                '{"audio":{"out' + str(x) + '":{"eq3":{"desc":null}}}}',
-            ]
+def _flatten_dict(dict_):
+    """ "Flatten" nested dictionaries to a list of path dictionaries.
 
-    return commands
+    For example:
+
+    {"a": {"b": True, "c": 3}} => [
+        {"a": {"b": True}},
+        {"a": {"c": 3}}
+    ]
+    """
+
+    def f(_, subtree, path):
+        k = path[-1]
+        path_dict = {k: subtree[k]}
+        for s in path[:-1][::-1]:
+            path_dict = {s: path_dict}
+        return path_dict
+
+    return _for_each_path_in_dict(dict_, f)
 
 
 def backup_device(device, db):
@@ -315,8 +295,10 @@ def backup_device(device, db):
 
 def query_device(device):
     print("*** query device settings ***")
-    for c in query_commands(device):
-        send_print(device, c)
+    command_list = _query_by_dict(device, _command_dict(device))
+    command_list.sort()
+    for c in command_list:
+        print(c)
 
 
 def print_header(device):
