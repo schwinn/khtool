@@ -32,16 +32,6 @@ def send_print(device, str):
     print(send_command(device, str))
 
 
-def send_add_array(device, str, y):
-    x = get_interface(device)
-    ssc_transaction = device.send_ssc(str, interface=x)
-
-    if hasattr(ssc_transaction, "RX"):
-        y.append(ssc_transaction.RX.replace("\r\n", ""))
-
-    return y
-
-
 def get_interface(device):
     pattern = "^fe80::"
     result = re.match(pattern, str(device.ip))
@@ -86,14 +76,6 @@ def restore_device(device, db):
         if any(read_only_conditions):
             continue
         send_print(device, json.dumps(d))
-
-
-def is_speaker(product):
-
-    if product == "KH 80" or product == "KH 150" or product == "KH 120 II":
-        return True
-
-    return False
 
 
 def _path_to_json_query(path):
