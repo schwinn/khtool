@@ -11,7 +11,7 @@ import re
 
 
 __author__ = "Thorsten Schwinn"
-__version__ = "0.191"
+__version__ = "0.192"
 __license__ = "MIT"
 
 
@@ -444,8 +444,8 @@ def handle_device(args, device):
         send_print(device, args.expert)
 
     if args.save:
-        if product == "KH 750":
-            print("Save is not supported on KH 750.")
+        if product != "KH 80": 
+            print("Save is not supported on this device.")
         else:
             send_print(device, '{"device":{"save_settings":true}}')
 
