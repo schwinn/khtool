@@ -444,7 +444,7 @@ def handle_device(args, device):
         send_print(device, args.expert)
 
     if args.save:
-        if product != "KH 80": 
+        if product != "KH 80":
             print("Save is not supported on this device.")
         else:
             send_print(device, '{"device":{"save_settings":true}}')
