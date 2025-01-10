@@ -41,43 +41,6 @@ def get_interface(device):
         return ""
 
 
-def restore_device(device, db):
-    if get_product(device) != db["product"]:
-        print("Product name does not match.")
-        exit(1)
-
-    if get_serial(device) != db["serial"]:
-        print("Serial number does not match.")
-        exit(1)
-
-    if get_version(device) != db["version"]:
-        print("Version does not match.")
-        exit(1)
-
-    cd = _command_dict(device)
-    for d in _flatten_dict(db["commands"]):
-        # First, get the osc/limits dictionary for the command on this device.
-        limits = cd
-        tmp = d
-        while isinstance(tmp, dict):
-            # Get the first key
-            for k in tmp:
-                break
-            tmp = tmp[k]
-            limits = limits[k]
-        limits = limits[0]
-        # Some conditions for limits replies that mean that a value is not writeable.
-        # This doesn't catch everything, but it's better than nothing. For some
-        # parameters, the limits values just don't make much sense.
-        read_only_conditions = [
-            "const" in limits and limits["const"],
-            "writeable" in limits and not limits["writeable"],
-        ]
-        if any(read_only_conditions):
-            continue
-        send_print(device, json.dumps(d))
-
-
 def _path_to_json_query(path):
     """Converts path lists to json to be used for requests.
 
@@ -289,6 +252,43 @@ def backup_device(device, db):
     db[device.ip]["version"] = get_version(device)
 
     return db
+
+
+def restore_device(device, db):
+    if get_product(device) != db["product"]:
+        print("Product name does not match.")
+        exit(1)
+
+    if get_serial(device) != db["serial"]:
+        print("Serial number does not match.")
+        exit(1)
+
+    if get_version(device) != db["version"]:
+        print("Version does not match.")
+        exit(1)
+
+    cd = _command_dict(device)
+    for d in _flatten_dict(db["commands"]):
+        # First, get the osc/limits dictionary for the command on this device.
+        limits = cd
+        tmp = d
+        while isinstance(tmp, dict):
+            # Get the first key
+            for k in tmp:
+                break
+            tmp = tmp[k]
+            limits = limits[k]
+        limits = limits[0]
+        # Some conditions for limits replies that mean that a value is not writeable.
+        # This doesn't catch everything, but it's better than nothing. For some
+        # parameters, the limits values just don't make much sense.
+        read_only_conditions = [
+            "const" in limits and limits["const"],
+            "writeable" in limits and not limits["writeable"],
+        ]
+        if any(read_only_conditions):
+            continue
+        send_print(device, json.dumps(d))
 
 
 def query_device(device):
