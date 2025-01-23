@@ -554,27 +554,31 @@ def main():
         else:
             raise Exception("No SSC device setup found.")
 
-    if args.backup:
-        devicedb = {}
-        if args.target != "all":
+    # Build list of target devices according to -t/--target option
+    if args.target == "all":
+        target_devices = found_setup.ssc_devices
+    elif int(args.target) >= len(found_setup.ssc_devices):
+        print(
+            "Target out of range. There are "
+            + str(len(found_setup.ssc_devices))
+            + " speaker(s) in khtool.json."
+        )
+        exit(1)
+    else:
+        target_devices = [found_setup.ssc_devices[int(args.target)]]
 
-            if int(args.target) >= len(found_setup.ssc_devices):
-                print(
-                    "Target out of range. There are "
-                    + str(len(found_setup.ssc_devices))
-                    + " speaker(s) in khtool.json."
-                )
+    # Attempt to connect to all target devices
+    for device in target_devices:
+        device.connect(interface=get_interface(device))
+        if hasattr(device, "connected"):
+            if not device.connected:
+                print("device " + str(device.ip) + " is not online")
                 exit(1)
 
-            device = found_setup.ssc_devices[int(args.target)]
-            x = get_interface(device)
-            device.connect(interface=x)
-            devicedb = backup_device(device, devicedb)
-        else:
-            for device in found_setup.ssc_devices:
-                x = get_interface(device)
-                device.connect(interface=x)
-                devicedb = backup_device(device, devicedb)
+    if args.backup:
+        devicedb = {}
+        for device in target_devices:
+            backup_device(device, devicedb)
 
         backup = {"devices": devicedb}
         backup["timestamp"] = int(time.time())
@@ -596,71 +600,22 @@ def main():
         exit(0)
 
     if args.restore:
-
         f = open(args.restore)
         data = json.load(f)
         f.close()
 
-        if args.target != "all":
-
-            if int(args.target) >= len(found_setup.ssc_devices):
-                print(
-                    "Target out of range. There are "
-                    + str(len(found_setup.ssc_devices))
-                    + " speaker(s) in khtool.json."
-                )
-                exit(1)
-
-            device = found_setup.ssc_devices[int(args.target)]
-            x = get_interface(device)
-            device.connect(interface=x)
-
-            if hasattr(device, "connected"):
-                if not device.connected:
-                    print("device " + str(device.ip) + " is not online")
-                    exit(1)
-
-            restore_device(device, data["devices"][device.ip])
-        else:
-            for device in found_setup.ssc_devices:
-                x = get_interface(device)
-                device.connect(interface=x)
-
-                if hasattr(device, "connected"):
-                    if not device.connected:
-                        print("device " + str(device.ip) + " is not online")
-                        exit(1)
-
-                if device.ip in data["devices"]:
-                    restore_device(device, data["devices"][device.ip])
+        for device in target_devices:
+            if device.ip in data["devices"]:
+                restore_device(device, data["devices"][device.ip])
+            else:
+                print(f"No record for device {device.ip} found in backup.")
 
         exit(0)
 
-    if args.target != "all":
-
-        if int(args.target) >= len(found_setup.ssc_devices):
-            print(
-                "Target out of range. There are "
-                + str(len(found_setup.ssc_devices))
-                + " speaker(s) in khtool.json."
-            )
-            exit(1)
-
-        device = found_setup.ssc_devices[int(args.target)]
-        x = get_interface(device)
-        device.connect(interface=x)
-
+    for device in target_devices:
         print_header(device)
         handle_device(args, device)
         print("")
-
-    else:
-        for device in found_setup.ssc_devices:
-            x = get_interface(device)
-            device.connect(interface=x)
-            print_header(device)
-            handle_device(args, device)
-            print("")
 
 
 if __name__ == "__main__":
