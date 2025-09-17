@@ -70,7 +70,7 @@ def restore_device(device, db):
 
 def is_speaker(product):
 
-    if product == "KH 80" or product == "KH 150" or product == "KH 120 II":
+    if product == "KH 80" or product == "KH 150" or product == "KH 120 II" or product == "KH 150 AES67":
         return True
 
     return False
@@ -131,6 +131,47 @@ def query_commands(device):
                 '{"audio":{"out":{"eq3":{"gain":null}}}}',
                 '{"audio":{"out":{"eq3":{"boost":null}}}}',
                 '{"audio":{"out":{"eq3":{"desc":null}}}}',
+            ]
+
+            return commands
+
+    if product == "KH 150 AES67":
+        version = get_version(device)
+        pattern = "^1_0"
+        result = re.match(pattern, version)
+        if not result:
+            commands += [
+                '{"device":{"name":null}}',
+                '{"device":{"identity":{"vendor":null}}}',
+                '{"device":{"identity":{"product":null}}}',
+                '{"device":{"identity":{"serial":null}}}',
+                '{"device":{"identity":{"version":null}}}',
+                '{"device":{"standby":{"enabled":null}}}',
+                '{"device":{"standby":{"auto_standby_time":null}}}',
+                '{"device":{"standby":{"level":null}}}',
+                '{"device":{"standby":{"countdown":null}}}',
+                '{"ui":{"logo":{"brightness":null}}}',
+                '{"audio":{"in":{"interface":null}}}',
+                '{"audio":{"in":{"current_input":null}}}',
+                '{"audio":{"out":{"level":null}}}',
+                '{"audio":{"out":{"mute":null}}}',
+                '{"audio":{"out":{"delay":null}}}',
+                '{"audio":{"out":{"solo":null}}}',
+                '{"audio":{"out":{"phaseinversion":null}}}',
+                '{"audio":{"out":{"mixer":{"levels":null}}}}',
+                '{"audio":{"out":{"aes67mixer1":{"levels":null}}}}',
+                '{"audio":{"out":{"eq2":{"enabled":null}}}}',
+                '{"audio":{"out":{"eq2":{"type":null}}}}',
+                '{"audio":{"out":{"eq2":{"frequency":null}}}}',
+                '{"audio":{"out":{"eq2":{"q":null}}}}',
+                '{"audio":{"out":{"eq2":{"gain":null}}}}',
+                '{"audio":{"out":{"eq2":{"boost":null}}}}',
+                '{"audio":{"out":{"eq3":{"enabled":null}}}}',
+                '{"audio":{"out":{"eq3":{"type":null}}}}',
+                '{"audio":{"out":{"eq3":{"frequency":null}}}}',
+                '{"audio":{"out":{"eq3":{"q":null}}}}',
+                '{"audio":{"out":{"eq3":{"gain":null}}}}',
+                '{"audio":{"out":{"eq3":{"boost":null}}}}',
             ]
 
             return commands
@@ -472,13 +513,13 @@ def main():
     parser.add_argument(
         "--save",
         action="store_true",
-        help="performs a save_settings command to the devices (only for KH 80/KH 150/KH 120 II)",
+        help="performs a save_settings command to the devices (only for KH 80/KH 150/KH 120 II/KH 150 AES67)",
     )
     parser.add_argument(
         "--brightness",
         action="store",
         type=int,
-        help="set logo brightness [0-100] (only for KH 80/KH 150/KH 120 II)",
+        help="set logo brightness [0-100] (only for KH 80/KH 150/KH 120 II/KH 150 AES67)",
     )
     parser.add_argument(
         "--delay",
