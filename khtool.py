@@ -10,8 +10,8 @@ import signal
 import re
 
 
-__author__ = "Thorsten Schwinn, KendrickLamarck"
-__version__ = "0.193"
+__author__ = "Thorsten Schwinn, KendrickLamarck, Stephen JK Hsieh"
+__version__ = "0.194"
 __license__ = "MIT"
 
 
