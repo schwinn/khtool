@@ -9,7 +9,6 @@ import time
 import signal
 import re
 
-
 __author__ = "Thorsten Schwinn, LeanderBlume, Stephen JK Hsieh"
 __version__ = "0.195"
 __license__ = "MIT"
@@ -107,20 +106,21 @@ def _command_dict(device):
       will contain a single element: The dictionary returned by the osc/limits query for
       that parameter.
     """
+    dict_key = get_product(device) + "/" + get_version(device)
     if not os.path.exists("khtool_commands.json"):
         file_dict = {}
     else:
         with open("khtool_commands.json", "r", encoding="ascii") as infile:
             file_dict = json.load(infile)
-            if device.ip in file_dict:
+            if dict_key in file_dict:
                 print(
-                    f"Reading available commands for device '{device.name}' from "
+                    f"Reading available commands for device type '{dict_key}' from "
                     f"khtool_commands.json..."
                 )
-                return file_dict[device.ip]
+                return file_dict[dict_key]
 
     print(
-        f"No available command list for device '{device.name}' found in "
+        f"No available command list for device type '{dict_key}' found in "
         f"khtool_commands.json. Querying..."
     )
     commands_for_device = _get_command_subtree(device, [])
@@ -129,11 +129,11 @@ def _command_dict(device):
     # purposes.
     del commands_for_device["osc"]["schema"]
     del commands_for_device["osc"]["limits"]
-    file_dict[device.ip] = commands_for_device
+    file_dict[dict_key] = commands_for_device
     with open("khtool_commands.json", "w", encoding="ascii") as outfile:
         json.dump(file_dict, outfile, indent=4, sort_keys=True)
     print(
-        f"Wrote available commands for device '{device.name}' to khtool_commands.json."
+        f"Wrote available commands for device type '{dict_key}' to khtool_commands.json."
     )
     return commands_for_device
 
