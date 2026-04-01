@@ -10,7 +10,7 @@ import signal
 import re
 
 __author__ = "Thorsten Schwinn, LeanderBlume, Stephen JK Hsieh"
-__version__ = "0.196"
+__version__ = "0.197"
 __license__ = "MIT"
 
 
@@ -18,17 +18,17 @@ signal.signal(signal.SIGINT, lambda x, y: exit(1))
 interface = ""
 
 
-def send_command(device, str):
+def send_command(device, command):
     x = get_interface(device)
-    ssc_transaction = device.send_ssc(str, interface=x)
+    ssc_transaction = device.send_ssc(command, interface=x)
     if hasattr(ssc_transaction, "RX"):
         return ssc_transaction.RX.replace("\r\n", "")
 
     return
 
 
-def send_print(device, str):
-    print(send_command(device, str))
+def send_print(device, command):
+    print(send_command(device, command))
 
 
 def get_interface(device):
@@ -167,7 +167,7 @@ def _for_each_path_in_dict(dict_, f):
         for s in path:
             subtree = subtree[s]
         for k in subtree.keys():
-            pathstring = "".join(path) + k
+            pathstring = "/".join(path) + "/" + k
             if pathstring in visited:
                 continue
             visited.append(pathstring)
@@ -309,56 +309,33 @@ def print_header(device):
         print("IPv6 address: " + device.ip)
 
 
-def get_product(device):
+def _get_identity_field(device, field):
     x = get_interface(device)
     ssc_transaction = device.send_ssc(
-        '{"device":{"identity":{"product":null}}}', interface=x
+        '{"device":{"identity":{"' + field + '":null}}}', interface=x
     )
 
     if hasattr(ssc_transaction, "RX"):
         y = json.loads(ssc_transaction.RX)
-        return str(y["device"]["identity"]["product"])
+        return str(y["device"]["identity"][field])
 
     return ""
+
+
+def get_product(device):
+    return _get_identity_field(device, "product")
 
 
 def get_serial(device):
-    x = get_interface(device)
-    ssc_transaction = device.send_ssc(
-        '{"device":{"identity":{"serial":null}}}', interface=x
-    )
-
-    if hasattr(ssc_transaction, "RX"):
-        y = json.loads(ssc_transaction.RX)
-        return str(y["device"]["identity"]["serial"])
-
-    return ""
+    return _get_identity_field(device, "serial")
 
 
 def get_version(device):
-    x = get_interface(device)
-    ssc_transaction = device.send_ssc(
-        '{"device":{"identity":{"version":null}}}', interface=x
-    )
-
-    if hasattr(ssc_transaction, "RX"):
-        y = json.loads(ssc_transaction.RX)
-        return str(y["device"]["identity"]["version"])
-
-    return ""
+    return _get_identity_field(device, "version")
 
 
 def get_vendor(device):
-    x = get_interface(device)
-    ssc_transaction = device.send_ssc(
-        '{"device":{"identity":{"vendor":null}}}', interface=x
-    )
-
-    if hasattr(ssc_transaction, "RX"):
-        y = json.loads(ssc_transaction.RX)
-        return str(y["device"]["identity"]["vendor"])
-
-    return ""
+    return _get_identity_field(device, "vendor")
 
 
 def handle_device(args, device):
@@ -387,18 +364,18 @@ def handle_device(args, device):
         query_device(device)
         return
 
-    if args.brightness != None:
+    if args.brightness is not None:
         send_print(
             device, '{"ui":{"logo":{"brightness":' + str(args.brightness) + "}}}"
         )
 
-    if args.delay != None:
+    if args.delay is not None:
         send_print(device, '{"audio":{"out":{"delay":' + str(args.delay) + "}}}")
 
-    if args.dimm != None:
+    if args.dimm is not None:
         send_print(device, '{"audio":{"out":{"dimm":' + f"{args.dimm:.1f}" + "}}}")
 
-    if args.level != None:
+    if args.level is not None:
         if kh750fwnew == 1:
             send_print(
                 device, '{"audio":{"out5":{"level":' + f"{args.level:.1f}" + "}}}"
@@ -498,22 +475,22 @@ def main():
     global interface
     interface = "%" + args.interface
 
-    if args.brightness:
+    if args.brightness is not None:
         if args.brightness < 0 or args.brightness > 100:
             print("Error: brightness out of range [0-100]")
             exit(1)
 
-    if args.delay:
+    if args.delay is not None:
         if args.delay < 0 or args.delay > 3360:
             print("Error: delay out of range [0-3360]")
             exit(1)
 
-    if args.dimm:
+    if args.dimm is not None:
         if args.dimm < -120 or args.dimm > 0:
             print("Error: dimm out of range [-120-0]")
             exit(1)
 
-    if args.level:
+    if args.level is not None:
         if args.level < 0 or args.level > 120:
             print("Error: level out of range [0-120]")
             exit(1)
@@ -580,9 +557,8 @@ def main():
         exit(0)
 
     if args.restore:
-        f = open(args.restore)
-        data = json.load(f)
-        f.close()
+        with open(args.restore) as f:
+            data = json.load(f)
 
         for device in target_devices:
             if device.ip in data["devices"]:
