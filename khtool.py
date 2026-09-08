@@ -13,7 +13,7 @@ import ipaddress
 
 __author__ = "Thorsten Schwinn, LeanderBlume, Stephen JK Hsieh, Igor Baranov"
 
-__version__ = "0.197"
+__version__ = "0.200"
 __license__ = "MIT"
 
 
@@ -361,14 +361,14 @@ def handle_device(args, device):
 
     if product == "KH 750":
         version = get_version(device)
-        pattern = "^1_0|^1_1"
+        pattern = "^1_0|^1_1|^2_"
         result = re.match(pattern, version)
         if result:
-            kh750fwnew = 0
+            kh750fwout5 = 0
         else:
-            kh750fwnew = 1
+            kh750fwout5 = 1
     else:
-        kh750fwnew = -1
+        kh750fwout5 = -1
 
     if args.query:
         query_device(device)
@@ -386,7 +386,7 @@ def handle_device(args, device):
         send_print(device, '{"audio":{"out":{"dimm":' + f"{args.dimm:.1f}" + "}}}")
 
     if args.level is not None:
-        if kh750fwnew == 1:
+        if kh750fwout5 == 1:
             send_print(
                 device, '{"audio":{"out5":{"level":' + f"{args.level:.1f}" + "}}}"
             )
@@ -396,13 +396,13 @@ def handle_device(args, device):
             )
 
     if args.mute:
-        if product == "KH 750" and kh750fwnew == 1:
+        if product == "KH 750" and kh750fwout5 == 1:
             send_print(device, '{"audio":{"out5":{"mute":true}}}')
         else:
             send_print(device, '{"audio":{"out":{"mute":true}}}')
 
     if args.unmute:
-        if product == "KH 750" and kh750fwnew == 1:
+        if product == "KH 750" and kh750fwout5 == 1:
             send_print(device, '{"audio":{"out5":{"mute":false}}}')
         else:
             send_print(device, '{"audio":{"out":{"mute":false}}}')
