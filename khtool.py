@@ -8,9 +8,11 @@ import argparse
 import time
 import signal
 import re
+import math
 import ipaddress
 
-__author__ = "Thorsten Schwinn, LeanderBlume, Stephen JK Hsieh"
+__author__ = "Thorsten Schwinn, LeanderBlume, Stephen JK Hsieh, Igor Baranov"
+
 __version__ = "0.197"
 __license__ = "MIT"
 
@@ -497,11 +499,15 @@ def main():
             exit(1)
 
     if args.dimm is not None:
+        if not math.isfinite(args.dimm):
+            parser.error("dimm must be a finite number in [-120, 0]")
         if args.dimm < -120 or args.dimm > 0:
             print("Error: dimm out of range [-120-0]")
             exit(1)
 
     if args.level is not None:
+        if not math.isfinite(args.level):
+            parser.error("level must be a finite number in [0, 120]")
         if args.level < 0 or args.level > 120:
             print("Error: level out of range [0-120]")
             exit(1)
